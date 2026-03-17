@@ -1,0 +1,31 @@
+## 🏀 Simple Points Counter App
+A clean and organized Flutter application for tracking scores between two teams, built to demonstrate modern development practices.
+
+## ✨ What's New? (Recent Refactoring)
+The app has been upgraded from a basic stateful implementation to a more scalable architecture:
+
+- 🌐 State Management: Fully migrated to Cubit (Bloc) for better logic separation.
+
+- 🎨 Custom Widgets: Created reusable components like CustomPointButton and TeamScoreColumn to follow the DRY (Don't Repeat Yourself) principle.
+
+- 📁 Clean Folder Structure: Organized into cubit, views, and widgets for improved maintainability.
+
+🛠️ Features
+- Independent score tracking for two teams.
+
+- Dynamic UI updates using Cubit states.
+
+- Reset functionality to clear scores.
+
+- Responsive layout for different screen sizes.
+
+## 🚀 Getting Started
+1- Clone the repository.
+
+2- Run flutter pub get.
+
+3- Run the app using flutter run.
+
+## 📸 Screenshots
+<!-- دا فولدر اسمه screenshots فيه كل اسكرينات التطبيق -->
+![App Screenshot](screenshots/app_screen.png)
