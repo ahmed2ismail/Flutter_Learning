@@ -33,6 +33,20 @@ _______________________________ أهم الأدوات والتقنيات _______
 - ملاحظة هامة: 
 عند تغيير الـ Orientation، يقوم فلاتر بإعادة بناء (Rebuild) للـ Widget الحالي لتطبيق التصميم الجديد المناسب للوضعية الجديدة.
 
+- الـ OrientationBuilder (للأوضاع):
+ده بيعرفك فوراً لو الموبايل في وضع Portrait أو Landscape.
+Widget build(BuildContext context) {
+  return Scaffold(
+    body: OrientationBuilder(
+      builder: (context, orientation) {
+        return orientation == Orientation.portrait
+            ? buildPortraitLayout()  // دالة بترجع شكل الموبايل الرأسي
+            : buildLandscapeLayout(); // دالة بترجع شكل الموبايل الأفقي
+      },
+    ),
+  );
+}
+
 - final Widget mobileLayout, tabletLayout, desktopLayout; دا بيعملي مشكلتين رخمين وهما :
 1- دايما بيتم انشاء ال mobile_layout, tablet_layout,desktop_layout ومش بيتم عرض غير واحدة منهم فقط علي الجهاز ودا معناه ان فيه هدر للموارد
 2- مشكلة ان انا معنديش context اللي من خلالها اقدر ا access الحاجة اللي تم انشاءها فوقه في ال widget tree لان ال context مستخبي جوه عند ال LayoutBuilder يعني جوه ال AdabtiveLayout فبالتالي مقدرش اوصله من هنا
@@ -173,6 +187,47 @@ class ResponsiveExample extends StatelessWidget {
     );
   }
 }
+
+______________________________________ Responsive Text: ______________________________________
+
+-- ال MediaQuery متنفعش هنا لانها بتخلي النص يكبر اوي او يصغير اوي مع تكبير وتصغير الشاشة ومش بتكون مناسبة خالص لان ال scaleFactor بتاعها كده
+- ال Scale Factor هو الاساس لان هو اللي بيخلي النص يكبر او يصغير من منصة للتانية ولازم يكون موجود واحد لكل منصة علي حدي وليس لكل المنصات واحد فقط
+- وحتي علي ال desktop ممكن يكون عندي desktop صغير واخر كبير فبالتالي لازم يبق  عندي minSize قيمة منفعش اقل عنها وكمان maxSize عشان مقلش او اتخطي حجم معين والشكل يبوظ مني
+- يبق كده لازم يكون عندي:
+1- scaleFactor for mobile, scaleFactor for tablet, scaleFactor for desktop
+2- minSize for mobile, minSize for tablet, minSize for desktop
+3- maxSize for mobile, maxSize for tablet, maxSize for desktop
+فلو مثلا عندنا fontSize فلازم نحسب ونجيب الاول ال scaleFactor وبناء عليه مع ال fontSize احسب القيمة ال Responsive ليه ومثلا هيكون اسمها Responsive fontSize ومعاهم ال (min, max) fontSize
+:: scaleFactor = width الحالي بتاع الشاشة ÷ width اللي انا حددته لكل Platform (mobile = 400, tablet = 700, desktop = 1000)
+:: Responsive fontSize = base fontSize(حجم الخط اللي في التصميم) * scaleFactor
+
+double getResponsiveFontSize(BuildContext context, {required double fontSize}) {
+  // double scaleFactor = getScaleFactor(context);
+  او :
+  double width = MediaQuery.sizeOf(context).width;
+  double scaleFactor = width < 600
+    ? return width / 400
+    : width < 900
+      ? return width / 700
+      : return width / 1000
+  double ResponsiveFontSize = fontSize * scaleFactor;
+
+  double lowerLimit = ResponsiveFontSize * .8; // (80% of size)
+  double upperLimit = ResponsiveFontSize * 1.2; // (120% of size)
+  // print('Base fontSize = $fontSize ## lowerLimit = $lowerLimit ## upperLimit = $upperLimit ## ResponsiveFontsize = $ResponsiveFontsize ## final fontSize = ${ResponsiveFontSize.clamp(lowerLimit,upperLimit)}')
+  return ResponsiveFontSize.clamp(lowerLimit,upperLimit);
+  // .clamp --> بتاخد قيمتين اقل واكبر ولو المتغير بتاعي كان قيمة اصغر من الاقل بيتغير للاقل ولو كانت قيمته اكبر من الاكبر بيتغير للاكبر ولو كان حاجة بينهم بيفضل زي مهو
+}
+
+double getScaleFactor(BuildContext context) {
+  double width = MediaQuery.sizeOf(context).width;
+  if (width < 600)
+    return width / 400;
+  } else if (width < 900) {
+    return width / 700;
+  } else {
+  return width / 1000;
+  }
 
 ________________________________________________________________________________
 _________________________________ Adaptive UI __________________________________

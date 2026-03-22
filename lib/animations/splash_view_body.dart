@@ -83,3 +83,26 @@
 //   }
 // }
 // ----------------------------------------- end of slide Animations in Flutter ---------------------------------------
+/*
+______________________________________ AnimatedCrossFade ____________________________________
+return AnimatedCrossFade(
+      firstChild: InActiveAllExpensesItem(allExpensesItemModel: allExpensesItemModel,),
+      secondChild: ActiveAllExpensesItem(allExpensesItemModel: allExpensesItemModel,),
+      crossFadeState: isSelected
+          ? CrossFadeState.showSecond
+          : CrossFadeState.showFirst,
+      duration: const Duration(milliseconds: 300),
+    );
+______________________________________ AnimatedSwitcher ____________________________________
+return AnimatedSwitcher(
+  duration: const Duration(milliseconds: 300),
+  child: isSelected
+      ? ActiveAllExpensesItem(
+          key: const ValueKey('active'), // الـ key مهم جداً هنا عشان فلاتر تفرق بينهم
+          allExpensesItemModel: allExpensesItemModel)
+      : InActiveAllExpensesItem(
+          key: const ValueKey('inactive'),
+          allExpensesItemModel: allExpensesItemModel),
+);
+
+*/

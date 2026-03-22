@@ -6,7 +6,21 @@
 -- Feature folder --> دا بيحتوي علي تفاصيل وخصائص التطبيق زي ال homeFeature لصفحة ال homePage, notificationFeature, detailedFeatured
 - ال feature ممكن تكون screen او اكتر من screen علي حسب التطبيق وبنعرفها مع الخبرة
 -- Feature folder --> بيكون فيه مجموعة ال Features اللي بتكون التطبيق وال feature ماهي الا شاشة او مجموعة من الشاشات
--- ال feature ذات نفسها بتتقسم لمجموعة من ال layers
+-- ال feature ذات نفسها بتتقسم لمجموعة من ال layers:
+Domain Layer: دي "قلب" التطبيق، فيها الـ Logic اللي مش بيتغير (زي إن المنتج لازم يكون ليه سعر). هي مستقلة تماماً عن أي حاجة تانية.
+
+Data Layer: دي المسؤولة عن "منين بنجيب البيانات؟" (سواء من الـ API بـ Dio أو من التخزين الداخلي بـ Isar). لو قررنا نغير قاعدة البيانات مستقبلاً، هنغير في الطبقة دي بس، وباقي التطبيق مش هيحس بحاجة.
+
+Presentation Layer: دي اللي فيها الـ UI (الـ Screens) والـ Bloc/Cubit. وظيفتها بس إنها تعرض البيانات وتستقبل أوامر المستخدم.
+lib/
+ ├── core/              # الحاجات المشتركة (Errors, Utils, Widgets العامة)
+ ├── features/          # كل ميزة في فولدر لوحدها (Auth, Home, Cart)
+ │    └── auth/         # مثال لميزة تسجيل الدخول
+ │         ├── data/    # الموديلات (Models) والـ Data Sources
+ │         ├── domain/  # الـ Entities والـ Repositories (التعريفات)
+ │         └── presentation/ # الشاشات والـ Cubits
+ └── main.dart
+
 -  أول layer هي Presentation layer --> ودي بيندرج تحتيها حاجتين
 1- ال ui اللي بيكون الشاشة
 2- ال manager اللي بيحتوي علي الحاجة اليي هت manage ال state بتاعت ال ui
@@ -29,4 +43,5 @@
 --- lib/Feature/home/data/repository/home_repository_impl.dart
 --- lib/Feature/home/data/services --> دا بيكون فيه ال services اللي هي بتتعامل مع ال api او مع ال local database عشان تجلب البيانات دي
 --- lib/Feature/home/data/services/home_api_service.dart
+-- lib/Feature/home/Domain --> دي "قلب" التطبيق، فيها الـ Logic اللي مش بيتغير (زي إن المنتج لازم يكون ليه سعر). هي مستقلة تماماً عن أي حاجة تانية.
 */
