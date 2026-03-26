@@ -531,7 +531,8 @@ SliverToBoxAdapter widget في Flutter بيستخدم لتحويل ودجت عا
               NewsListViewBuilder(category: "general",),
               // SliverToBoxAdapter(child: NewsListView()),
               SliverFillRemaining(child: BestSellerListView()),
-              // SliverFillRemaining : بتستخدم عشان تخلي ال ListView اللي جواها تاخد المساحة المتبقية من ال screen وتتعامل معاها كأنها جزء واحد من ال scroll، وبكده حلينا مشكلة ال scrolling جوا ال ListView اللي كانت بتعارض ال CustomScrollView.
+              // SliverFillRemaining : بتستخدم عشان تخلي ال ListView اللي جواها تاخد المساحة المتبقية من ال screen نفس فكرة ال Expanded وتتعامل معاها كأنها جزء واحد من ال scroll، وبكده حلينا مشكلة ال scrolling جوا ال ListView اللي كانت بتعارض ال CustomScrollView.
+              بنستخدم معاها خاصية hasScrollBody: false,
             ],
           ),
       // الطريقة الثانية عن طريق CustomScrollView
