@@ -56,6 +56,76 @@ Container(
             ),
             child: ...
 --------------------------------------------------------------------------------
+// الـ gap هي ويدجت مخصصة (Custom Widget) بنعملها عشان نوحد المسافات بين العناصر في الـ Column أو الـ Row.
+// بدلاً من تكرار SizedBox في كل مكان، بنستخدم gap عشان الكود يكون أنظف وأسهل في القراءة.
+class gap extends StatelessWidget {
+  final double value;
+  const gap(this.value, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // بتعرف هي جوا Row ولا Column وتدي مسافة (عرض أو طول) بناءً على المكان.
+    return SizedBox(height: value, width: value);
+  }
+}
+// مثال للاستخدام:
+// Column(children: [ Text('Hello'), gap(12), Text('World') ])
+const gap(12.0) بدل ال SizedBox مثلا
+
+--------------------------------------------------------------------------------
+// شرح الـ Gap Widget:
+// هي ويدجت من مكتبة خارجية (gap package) بتستخدم لعمل مسافات بين العناصر داخل الـ Column أو الـ Row.
+// ميزتها عن الـ SizedBox إنك مش محتاج تحدد height لو أنت في Column أو width لو أنت في Row،
+// هي بتعرف لوحدها الاتجاه (Direction) وتضيف المسافة المطلوبة.
+
+// مثال للاستخدام بعد إضافة المكتبة:
+// Column(children: [ Text('A'), Gap(20), Text('B') ]) // ستضيف مسافة رأسية 20
+// Row(children: [ Text('A'), Gap(20), Text('B') ])    // ستضيف مسافة أفقية 20
+--------------------------------------------------------------------------------
+// شرح مكتبة collection:
+// هي مكتبة رسمية من فريق Dart بتوفر أدوات (Utility functions) قوية للتعامل مع القوائم (Lists)، المجموعات (Sets)، والخرائط (Maps).
+// أشهر استخداماتها هو المقارنة بين القوائم (Equality) لأن Dart بتقارن الـ Lists بالـ Reference مش بالقيم.
+
+// مثال للمقارنة:
+// ListEquality().equals([1, 2], [1, 2]); // بترجع true
+
+// ميزة الـ firstWhereOrNull:
+// بدل ما تستخدم firstWhere وتعمل Crash لو العنصر مش موجود، دي بترجع null بأمان.
+// var user = users.firstWhereOrNull((u) => u.id == 5);
+
+--------------------------------------------------------------------------------
+// شرح مكتبة supercharged:
+// هي مكتبة بتضيف "قوى خارقة" (Extensions) للأنواع الأساسية في Dart زي (String, int, double, Iterable).
+// بتخلي الكود أقصر بكتير وأقرب للغة البشر.
+
+// أمثلة سحرية:
+// 1. تحويل النص لرقم: "42".toInt(); بدل int.parse("42");
+// 2. التعامل مع الألوان: "#ff0000".toColor(); أو Colors.red.allShades();
+// 3. الوقت: 5.minutes; أو 2.seconds; بدل Duration(seconds: 2);
+// 4. العمليات على القوائم: [1, 2, 3].sum; أو [1, 2, 3].average;
+// 5. التكرار: 5.times(() => print("Hello"));
+
+// مثال يجمع القوة:
+// var result = [1, 2, 3].count((x) => x > 1); // بيعد العناصر اللي أكبر من 1
+
+------------------------------------- Spread Operator(أداة التفريغ) -------------------------------------------
+Spread Operator (...) قبل userInfoList. هذه الثلاث نقاط تقوم بـ "تفريغ" أو "استخراج" العناصر من القائمة الناتجة وتضعها كعناصر فردية مباشرة داخل الـ children.
+مثال:
+Row(
+            children: [
+              ...userInfoList.map( --> هنا ال userInfoList دي ليست معمولها mapping يعني هي هتجيب كل العناصر اللي جواها وتحطها كقائمة كاملة في ال children ودا بيعمل مشكلة لان ال Row,Column children بيستقبل عناصر فردية وليس قائمة كاملة
+              واحنا حلينا المشكلة دي ب ... قبل الليست وبكده هيتصم فصل القائمة وهيحطها في ال children عنصر عنصر وليس قائمة كاملة
+                (item) => Expanded(
+                  child: UserInfoListTile(
+                    image: item.image,
+                    title: item.title,
+                    subTitle: item.subTitle,
+                  ),
+                ), ملاحظة بسيطة: عند استخدام الـ Spread Operator (...)، لم نعد بحاجة لكتابة .toList() في النهاية؛ لأن أداة التفريغ (...) تستطيع التعامل مع الـ Iterable الناتج من دالة map مباشرة، وهذا يجعل الكود أنظف وأكثر احترافية.
+              ),
+            ],
+          ),
+--------------------------------------------------------------------------------
 automaticallyImplyLeading في ال AppBar بيستخدم عشان يتحكم في ظهور زر الرجوع (back button) تلقائيًا.
 لو حطيت automaticallyImplyLeading: false, مش هيظهر زر الرجوع حتى لو كان فيه صفحة سابقة في الستاك.
 لو حطيت automaticallyImplyLeading: true, هيظهر زر الرجوع تلقائيًا لما يكون فيه صفحة سابقة في الستاك.
@@ -297,6 +367,34 @@ class TuneView extends StatelessWidget {
     );
   }
 }
+------------------------------------ asMap: -----------------------------------------
+الـ `.asMap()` هي ميزة (Method) في لغة Dart بتتحول الـ `List` لـ `Map`.
+- **ليه بنستخدمها؟** في الـ `List` العادية لما بنعمل `.map()` بنقدر نوصل للعنصر (Value) بس، لكن مش بنقدر نعرف ترتيبه (Index) كام بسهولة.
+- **إزاي بتشتغل؟** لما بنحول الستة لـ Map، بيبقى الـ `Key` هو الـ **Index** (0, 1, 2...) والـ `Value` هو **العنصر نفسه**.
+- **الـ `.entries`:** بنستخدمها عشان نحول الـ Map لمجموعة مدخلات نقدر نلف عليها (Iterate)، وكل `entry` بيبقى جواه الـ `key` (اللي هو الـ index) والـ `value` (اللي هو الموديل بتاعنا).
+
+**مثال من الكود بتاعك:**
+بفضل الـ `.asMap()`، قدرنا نستخدم الـ `index` عشان نحدد الـ `padding` (لو العنصر رقم 1 ياخد padding مختلف) وعشان نغير الـ `selectedIndex` لما المستخدم يضغط على العنصر.
+
+children: allExpensesItems.asMap().entries.map((entry) {
+        final int index = entry.key;
+        return Expanded(
+          child: GestureDetector(
+            onTap: () {
+              setState(() {
+                selectedIndex = index;
+              });
+            },
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: index == 1 ? 12 : 0),
+              child: AllExpensesItem(
+                allExpensesItemModel: entry.value,
+                isSelected: selectedIndex == index,
+              ),
+            ),
+          ),
+        );
+      }).toList(),
 
 --------------------------------------------------------------------------------
 ScrollConfiguration widget : دي ويدجت بتستخدم عشان تخلي ال Scrollable widgets زي ListView أو SingleChildScrollView تدعم السحب (scrolling) باستخدام أجهزة مختلفة زي الفأرة (mouse) ولوحة اللمس (trackpad) بجانب اللمس (touch).
@@ -310,6 +408,116 @@ ScrollConfiguration(
             },
           ),
           child: ...
+--------------------------------------------------------------------------------
+// شرح الـ DropdownButton:
+// هو ويدجت بيسمح للمستخدم يختار قيمة واحدة من قائمة خيارات بتظهر لما يضغط عليه.
+
+// المكونات الأساسية:
+// 1. value: القيمة المختارة حالياً (لازم تكون موجودة جوه القائمة).
+// 2. items: قائمة من نوع DropdownMenuItem، وكل واحد فيه الـ value والـ child (النص اللي هيظهر).
+// 3. onChanged: دالة بتشتغل لما المستخدم يختار قيمة جديدة، ومن خلالها بنحدث الـ State.
+
+// مثال عملي:
+String selectedValue = 'Egypt'; // القيمة الابتدائية
+
+DropdownButton<String>(
+  value: selectedValue, // القيمة اللي ظاهرة دلوقتي
+  isExpanded: true,     // عشان ياخد عرض الشاشة كامل
+  underline: Container(), // عشان نشيل الخط اللي تحت الزرار لو مش عايزينه
+  items: ['Egypt', 'USA', 'KSA', 'UAE'].map((String item) {
+    return DropdownMenuItem<String>(
+      value: item,
+      child: Text(item),
+    );
+  }).toList(),
+  onChanged: (String? newValue) {
+    setState(() {
+      selectedValue = newValue!; // تحديث القيمة المختارة
+    });
+  },
+),
+--------------------------------------------------------------------------------
+DropdownButton: قائمة منسدلة عادية.
+DropdownButtonFormField: قائمة منسدلة مجهزة للعمل داخل النماذج (Forms).
+PopupMenuButton: زر يفتح قائمة عائمة (غالباً يستخدم في الـ AppBar أو بجوار العناصر).
+زر مخصص (InkWell / GestureDetector): زر تصممه بنفسك ليفتح BottomSheet (قائمة تظهر من أسفل الشاشة) عند الضغط عليه.
+DropdownButton: هو المكون الأساسي للقائمة المنسدلة. مشكلته أنه صعب التخصيص (Styling) لجعله يبدو تماماً مثل الـ TextField الذي صممته (من حيث الحدود، الخلفية، الهوامش).
+DropdownButtonFormField: هو ببساطة عبارة عن DropdownButton مُغلف بخصائص الـ Form. أكبر ميزة فيه أنه يقبل خاصية decoration: InputDecoration(...) تماماً مثل الـ TextField. هذا يعني أنه يمكنك إعطاؤه نفس الحواف، اللون الرمادي، والتصميم الذي استخدمته في CustomTextField ليظهروا بجانب بعضهم وكأنهم من نفس العائلة، بالإضافة إلى أنه يدعم التحقق (Validation) لو قررت وضعهم داخل Form لاحقاً.
+
+--------------------------------------------------------------------------------
+return ScrollConfiguration(
+      behavior: const MaterialScrollBehavior().copyWith(
+        dragDevices: {
+          PointerDeviceKind.touch,
+          PointerDeviceKind.mouse,
+          PointerDeviceKind.trackpad,
+        },
+      ),
+      child: ExpandablePageView( --> دي package انا منزلها بتجيبلي العرض والطول بتاع ال child وبتظبط الاب علي اساسهم وبتستخدم مع عدد محدود من العناصر من ال pageView
+        physics: const BouncingScrollPhysics(),
+        controller: pageController,
+        scrollDirection: Axis.horizontal,
+        children: List.generate(3, (index) {
+          return Padding(
+            padding: EdgeInsets.only(right: index != 2 ? 12.0 : 0),
+            child: const MyCard(),
+          );
+        }),
+      ),
+    );
+
+--------------------------------------------------------------------------------
+الـ Enum (اختصار لـ Enumeration) هو وسيلة لتعريف "خيارات محددة" لا يمكن الخروج عنها. بدلاً من الـ bool الذي يعطيك خيارين فقط (True/False)، الـ Enum يجعل الكود أوضح للقراءة (Readable) ويمنع الأخطاء.
+enum TransactionType { 
+  withdrawal, // سحب
+  deposit     // إيداع
+}
+
+--------------------------------------------------------------------------------
+- دي مكتبة ال fl_chart لرسم الرسوم البيانية:
+int activeIndex = -1; // عملتها -1 عشان في البداية مش بيكون فيه سكشن تم اختياره او الوقوف عليه بالماوس
+
+return Row(
+        children: [
+          Expanded(
+            child: AspectRatio(
+              aspectRatio: 1, // ليكون مربعا تماماً
+                child: PieChart(_getChartData()),
+            ),
+          ),
+        ],
+      );
+
+  PieChartData _getChartData() {
+    return PieChartData(
+      // هنعمل الانيميشن
+      pieTouchData: PieTouchData(
+        enabled: true,
+        touchCallback: (event, pieTouchResponse) {
+          // عن طريق ال pieTouchResponse اقدر اجيب ال index بتاع ال item اللي انا واقف عليها
+          setState(() {
+          activeIndex = pieTouchResponse?.touchedSection?.touchedSectionIndex ?? -1;
+          });
+        },
+      ),
+        // titleSunbeamLayout: false, // // لا نريد توزيع العناوين بشكل شعاعي تلقائي من المكتبة
+        sectionsSpace: 0, // (ليكون ملتصقاً) لا نريد مسافات بين الأجزاء --> لجعل الألوان متلاصقة تماماً بدون فراغات بيضاء بينها.
+            // لرسم الاجزاء sections
+          sections: incomeDetails.map((item) {
+            return PieChartSectionData(
+              title: item.title, // كتابة العنوان من ال list اللي اسمها incomeDetails
+              value: double.parse(item.value.replaceAll('%', ''),), // تحويل النص (مثل "40%") إلى رقم عشري (40.0) عن طريق حذف علامة % ثم التحويل
+              color: item.color, // لون الجزء المقتطع من الدائرة بناءً على الموديل
+              showTitle:false, // لا نريد كتابة النسبة داخل الدائرة لو ب true النسبة هتنكتب جوه الدايرة
+              radius: activeIndex == incomeDetails.indexOf(item) ? 35 : 25, // هذا هو "سمك" الحلقة (الدائرة) (Donut Chart). لو زدت الرقم، ستصبح الدائرة ممتلئة أكثر نحو المركز.
+            );
+          }).toList(),
+        ),
+      ),
+    ),
+  ],
+);
+
 --------------------------------------------------------------------------------
 SliverToBoxAdapter widget في Flutter بيستخدم لتحويل ودجت عادي (مثل Container أو Text) إلى عنصر قابل للاستخدام داخل CustomScrollView أو أي شجرة ودجات تستخدم Slivers.
 // عندنا كذا طريقة نعمل بيها سكرول للصفحة كاملة
