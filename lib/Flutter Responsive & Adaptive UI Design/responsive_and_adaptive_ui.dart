@@ -203,31 +203,43 @@ ______________________________________ Responsive Text: ________________________
 
 double getResponsiveFontSize(BuildContext context, {required double fontSize}) {
   // double scaleFactor = getScaleFactor(context);
-  او :
+  // او :
   double width = MediaQuery.sizeOf(context).width;
-  double scaleFactor = width < 600
-    ? return width / 400
-    : width < 900
-      ? return width / 700
-      : return width / 1000
-  double ResponsiveFontSize = fontSize * scaleFactor;
+    // لو ال context بتاع ال MediaQuery هيعملنا مشكلة وقت منيجي نشغل الكود فنقدر نشيله و هنجيب ال width عن طريق ال dispatcher
+  var dispatcher = PlatformDispatcher.instance;
+  var physicalSize = dispatcher.views.first.physicalSize.width;
+  var devicePhysicalRatio = dispatcher.views.first.devicePixelRatio;
+  double width = physicalSize / devicePhysicalRatio; // دا ال width بتاع الشاشة ونفس اللي بيجي من ال MediaQuery
 
-  double lowerLimit = ResponsiveFontSize * .8; // (80% of size)
-  double upperLimit = ResponsiveFontSize * 1.2; // (120% of size)
+  double scaleFactor = width < 600
+      ? width / 400
+      : width < 900
+      ? width / 700
+      : width / 1000;
+  double responsiveFontSize = fontSize * scaleFactor;
+
+  double lowerLimit = responsiveFontSize * .8; // (80% of size)
+  double upperLimit = responsiveFontSize * 1.2; // (120% of size)
   // print('Base fontSize = $fontSize ## lowerLimit = $lowerLimit ## upperLimit = $upperLimit ## ResponsiveFontsize = $ResponsiveFontsize ## final fontSize = ${ResponsiveFontSize.clamp(lowerLimit,upperLimit)}')
-  return ResponsiveFontSize.clamp(lowerLimit,upperLimit);
+  return responsiveFontSize.clamp(lowerLimit, upperLimit);
   // .clamp --> بتاخد قيمتين اقل واكبر ولو المتغير بتاعي كان قيمة اصغر من الاقل بيتغير للاقل ولو كانت قيمته اكبر من الاكبر بيتغير للاكبر ولو كان حاجة بينهم بيفضل زي مهو
 }
 
 double getScaleFactor(BuildContext context) {
   double width = MediaQuery.sizeOf(context).width;
-  if (width < 600)
+  if (width < 600) {
     return width / 400;
   } else if (width < 900) {
     return width / 700;
   } else {
-  return width / 1000;
+    return width / 1000;
   }
+}
+_______________________________
+widget ConstrainedBox(
+  constraints: BoxConstraints(maxWidth: 60), // بتسمحلي اضع قيود لل child بتاعها بحيث انه ميقدرش يتخطاها
+  child: ...
+)
 
 ________________________________________________________________________________
 _________________________________ Adaptive UI __________________________________
