@@ -16,10 +16,8 @@
 //   // AnimationController --> بيدينا value from 0 (begin) to 1 (end) دايما
 //   // لو احنا عايزين ندي لل AnimationController قيمة غير اي حاجة من 0 ل 1 فلازم نحط حاجة فوقه
 //   // فهنروح ننشا ال Animation ذات نفسه اللي احنا هنحطه فوق ال AnimationController واللي هياخد القيم منه ويطلعلنا القيم اللي انا محتاجها اللي هو ال range اللي انا عايزه
-//   late AnimationController
-//   animationController; // --> بنستخدمه عشان نعمل animation
-//   late Animation<Offset>
-//   slideTransitionAnimation; // --> هنعمل انيميشن من نوع slid
+//   late AnimationController animationController; // --> بنستخدمه عشان نعمل animation
+//   late Animation<Offset> slideTransitionAnimation; // --> هنعمل انيميشن من نوع slid
 //   // Offset يعني المكان او القيمة علي المحاور x,y
 
 //   @override
@@ -42,8 +40,7 @@
 //     // slideTransitionAnimation.addListener(() => setState(() {}));
 //     // .addListener --> بمعني حط ودانك معاه ولما القيمة تتغير اعملي setState يعني حدث ال ui بس كده الشاشة كلها هتتحدث مش النص بس او الحاجة اللي احنا عايزين نعملها انيميشن
 //     // الحل هو ان احنا ن wrap ال SlideTransition مع AnimatedBuilder
-//     animationController
-//         .forward(); //--> عشان تمشي ال animation بصورة سلسة لحد نهايته
+//     animationController.forward(); //--> عشان تمشي ال animation بصورة سلسة لحد نهايته
 //   }
 
 // @override

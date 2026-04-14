@@ -1,10 +1,9 @@
+// import 'dart:convert';
 // import 'dart:developer';
-// import 'package:dio/dio.dart';
+// import 'package:http/http.dart' as http;
 
 // class ApiService {
-//   final Dio _dio;
 //   final String _baseUrl = 'https://googleapis.com/books/v1/';
-//   ApiService(this._dio);
 
 //   Future<dynamic> getRequest({
 //     required String? endpoint,
@@ -18,19 +17,20 @@
 //       headers!.addAll({'Authorization': 'Bearer $token'});
 //     }
 //     log('url: $_baseUrl$endpoint, headers: $headers, token: $token');
-//     final response = await _dio.get('$_baseUrl$endpoint');
+//     final response = await http.get(Uri.parse('$_baseUrl$endpoint'));
 //     if (response.statusCode == 200 || response.statusCode == 201) {
-//       return response.data;
+//       dynamic data = jsonDecode(response.body); // Changed to dynamic
+//       return data;
 //     } else {
 //       throw Exception(
-//         'Failed to load data ... Status Code: ${response.statusCode} with body: ${response.data}',
+//         'Failed to load data ... Status Code: ${response.statusCode} with body: ${jsonDecode(response.body)}',
 //       );
 //     }
 //   }
 
 //   Future<dynamic> postRequest({
 //     required String? endpoint,
-//     Map<String, String>? bodyData,
+//     Map<String, String>? body,
 //     Map<String, String>? headers,
 //     String? token,
 //   }) async {
@@ -38,19 +38,18 @@
 //       // headers!['Authorization'] = 'Bearer $token';
 //       headers!.addAll({'Authorization': 'Bearer $token'});
 //     }
-//     log(
-//       'url: $_baseUrl$endpoint, body: $bodyData, headers: $headers, token: $token',
-//     );
-//     final response = await _dio.post(
-//       '$_baseUrl$endpoint',
-//       data: bodyData,
-//       options: Options(headers: headers),
+//     log('url: $_baseUrl$endpoint, body: $body, headers: $headers, token: $token');
+//     final response = await http.post(
+//       Uri.parse('$_baseUrl$endpoint'),
+//       body: body,
+//       headers: headers,
 //     );
 //     if (response.statusCode == 200 || response.statusCode == 201) {
-//       return response.data;
+//       dynamic data = jsonDecode(response.body); // Changed to dynamic
+//       return data;
 //     } else {
 //       throw Exception(
-//         'Failed to post data ... Status Code: ${response.statusCode} with body: ${response.data}',
+//         'Failed to post data ... Status Code: ${response.statusCode} with body: ${jsonDecode(response.body)}',
 //       );
 //     }
 //   }
@@ -59,7 +58,7 @@
 //   // putRequest is used to update existing data in the API. It usually requires an ID to specify which data to update. The data type sent is similar to postRequest, but the method is 'PUT' instead of 'POST', and the content type is often 'x-www-form-urlencoded', which is like JSON rather than form-data.
 //   Future<dynamic> putRequest({
 //     required String? endpoint,
-//     Map<String, String>? bodyData,
+//     Map<String, String>? body,
 //     Map<String, String>? headers,
 //     String? token,
 //   }) async {
@@ -69,20 +68,18 @@
 //         'Content-Type': 'application/x-www-form-urlencoded',
 //       });
 //     }
-//     log(
-//       'url: $_baseUrl$endpoint, body: $bodyData, headers: $headers, token: $token',
-//     );
-//     final response = await _dio.put(
-//       '$_baseUrl$endpoint',
-//       data: bodyData,
-//       options: Options(headers: headers)
+//     log('url: $_baseUrl$endpoint, body: $body, headers: $headers, token: $token',);
+//     final response = await http.put(
+//       Uri.parse('$_baseUrl$endpoint'),
+//       body: body,
+//       headers: headers,
 //     );
 //     if (response.statusCode == 200) {
-//       dynamic data = response.data;
+//       dynamic data = jsonDecode(response.body); // Changed to dynamic
 //       return data;
 //     } else {
 //       throw Exception(
-//         'Failed to put data ... Status Code: ${response.statusCode} with body: ${response.data}',
+//         'Failed to put data ... Status Code: ${response.statusCode} with body: ${jsonDecode(response.body)}',
 //       );
 //     }
 //   }
@@ -96,13 +93,16 @@
 //       headers!.addAll({'Authorization': 'Bearer $token'});
 //     }
 //     log('url: $_baseUrl$endpoint, headers: $headers, token: $token');
-//     final response = await _dio.delete('$_baseUrl$endpoint', options: Options(headers: headers));
+//     final response = await http.delete(
+//       Uri.parse('$_baseUrl$endpoint'),
+//       headers: headers,
+//     );
 //     if (response.statusCode == 200) {
-//       dynamic data = response.data;
+//       dynamic data = jsonDecode(response.body); // Changed to dynamic
 //       return data;
 //     } else {
 //       throw Exception(
-//         'Failed to delete data ... Status Code: ${response.statusCode} with body: ${response.data}',
+//         'Failed to delete data ... Status Code: ${response.statusCode} with body: ${jsonDecode(response.body)}',
 //       );
 //     }
 //   }

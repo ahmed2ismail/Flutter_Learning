@@ -112,6 +112,55 @@
   }
   ```
 
+import 'package:clean_arch_bookly_app/Core/use_cases/no_parameter_use_case.dart';
+abstract class UseCase<T> {
+  Future<Either<Failure, T>> call();
+}
+
+import 'package:clean_arch_bookly_app/Core/use_cases/use_case.dart';
+// generic usecase:
+abstract class UseCase<T, Param> {
+// هنا بنحدد نوع البيانات اللي هيرجعها ال UseCase، في الحالة دي احنا بنقول انه هيكون Future من Either اللي ممكن يرجع Failure او List<BookEntity>
+// ودا اسمه ال Type Definition اللي بنستخدمه عشان نحدد نوع البيانات اللي هيرجعها ال UseCase
+  Future<Either<Failure, T>> call(Param param);
+}
+
+import 'package:clean_arch_bookly_app/Core/use_cases/no_parameter_use_case.dart';
+class FetchFeaturedBooksUseCase implements UseCase<List<BookEntity>> {
+  final HomeRepo homeRepo;
+
+  FetchFeaturedBooksUseCase(this.homeRepo);
+
+@override
+  Future<Either<Failure, List<BookEntity>>> call() async {
+    // هنا احنا بنقول ان ال call دي هتستقبل اي حاجة من ال parameters اللي احنا عايزينها يعني مثلا لو احنا عايزين نجيب الكتب اللي بتبدأ بحرف معين ممكن نعمل parameter اسمه startWith ونستخدمه هنا
+    // او ممكن مثلا لو احنا هنت check علي permission قبل ما نجيب الكتب ممكن نعمل parameter اسمه permissionStatus ونستخدمه هنا
+    // بس في الحالة دي احنا مش محتاجين اي parameters عشان كدا هنسيبها فاضية
+    // وبعدين هنروح لل homeRepo ونقول له يجيبلي الكتب اللي هي featured books وبعدين هنرجع النتيجة اللي جايه من ال homeRepo
+    return await homeRepo.getFeaturedBooks();
+  }
+}
+  ```
+  او ممكن نستخدم ال generic UseCase اللي عملناه قبل كدا بدل منعمل ملفين اتنين واحد لل no parameter وواحد لل generic UseCase:
+  // lib/Core/use_cases/use_case.dart
+  class NoParameter {
+    // دا كلاس فاضي بنستخدمه لما ال UseCase مش محتاج parameters
+  }
+  abstract class UseCase<T, Param> {
+    Future<Either<Failure, T>> call([Param param]);
+  }
+  class FetchFeaturedBooksUseCase implements UseCase<List<BookEntity>, NoParameter> {
+  final HomeRepo homeRepo;
+
+  FetchFeaturedBooksUseCase(this.homeRepo);
+
+@override
+  Future<Either<Failure, List<BookEntity>>> call([NoParameter? param]) async {
+    return await homeRepo.getFeaturedBooks();
+  }
+}
+  ```
+
 **ملخص طبقة الـ Domain:** هي قلب التطبيق، تحتوي على القواعد الأساسية (Entities)، وتُعرّف العقود (Repositories)، وتنفذ الإجراءات (Use Cases). لا تعرف شيئاً عن العالم الخارجي.
 
 ----------------------------------
@@ -153,7 +202,7 @@
 
 **ب. Repositories (التنفيذ - Implementation):**
 - هي فئات حقيقية (Concrete Classes) تقوم بتنفيذ (implements) الـ Abstract Class الخاصة بالـ Repository من طبقة الـ Domain.
-- هي التي تقرر من أين ستأتي البيانات (من مصدر بيانات عن بعد أم محلي).
+- هي التي تقرر من أين ستأتي البيانات (من مصدر بيانات عن بعد أم محلي) ومن الافضل ان يوجد كلاهما (remote data source, local data source) عشان لما المستخدم يفتح التطبيق يلاقي المحتوي موجود جاهز مش لسه هيحمله لان دا بيستهلك من بيانات النت ليه وكل شوية بيظهرله loading indicator اثناء عملية التحميل ودي تعتبر تجربة سيئة ليه فبنحلها باننا بنعمل local data source مع ال remote data source.
 - **مثال:**
   ```dart
   // lib/features/weather/data/repositories/weather_repository_impl.dart
@@ -166,8 +215,9 @@
   class WeatherRepositoryImpl implements WeatherRepository {
     final WeatherRemoteDataSource remoteDataSource;
     // يمكن إضافة LocalDataSource هنا للتعامل مع التخزين المحلي
+    final WeatherLocalDataSource localDataSource;
 
-    WeatherRepositoryImpl({required this.remoteDataSource});
+    WeatherRepositoryImpl({required this.remoteDataSource, required this.localDataSource});
 
     @override
     Future<Either<Failure, WeatherEntity>> getWeatherByCity(String cityName) async {
@@ -386,6 +436,35 @@ lib/
             │   └── weather_state.dart
             └── pages/ (أو screens/ أو views/)
                 └── weather_page.dart
+
+```
+lib/
+├── core/
+│   ├── errors/          # Failures, Exceptions handling
+│   ├── network/         # Application-wide network handling
+│   ├── theme/           # Design System (colors, fonts, sizes based on Stitch)
+│   ├── usecases/        # Base abstract UseCase implementation
+│   ├── utils/           # Extension methods, constants
+│   └── widgets/         # Shared Dummy Components (buttons, textfields, shimmers)
+├── di/                  # Dependency Injection via get_it
+│   └── injection_container.dart
+├── features/            # Features (e.g., auth, main, dashboard)
+│   ├── [feature_name]/  
+│   │   ├── data/
+│   │   │   ├── datasources/ # Remote & Local data sources
+│   │   │   ├── models/      # Data models (JSON serialization)
+│   │   │   └── repositories/# Repository Implementations
+│   │   ├── domain/
+│   │   │   ├── entities/    # Core business objects
+│   │   │   ├── repositories/# Interfaces for repositories
+│   │   │   └── usecases/    # Feature-specific use cases
+│   │   └── presentation/
+│   │       ├── bloc/        # Feature BLoCs/Cubits
+│   │       ├── pages/       # Screen UI
+│   │       └── widgets/     # Smart/Feature-specific widgets
+├── main.dart            # Flutter entry point
+├── memora_app.dart      # Main App Widget wrapper
+└── app_routes.dart      # Global go_router configuration
 
 ```
 

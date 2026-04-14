@@ -480,6 +480,47 @@ widget ConstrainedBox(
 )
 
 --------------------------------------------------------------------------------
+.cast<Type>() --> تُستخدم دالة `.cast<Type>()` في Dart لتحويل نوع عناصر القائمة (List) أو المجموعة (Set) من نوع عام إلى نوع أكثر تحديداً. 
+هذا مفيد جداً عند التعامل مع البيانات القادمة من JSON، حيث تكون القوائم عادةً من نوع `List<dynamic>`، ونحن نعلم يقيناً أن العناصر بداخلها هي نصوص `String` أو أرقام مثلاً.
+
+**لماذا نستخدمها؟**
+لأن Dart لغة صارمة في أنواع البيانات (Strongly Typed). إذا حاولت إسناد `List<dynamic>` إلى متغير من نوع `List<String>`، سيحدث خطأ (Type Mismatch). الـ `.cast` تقوم بعمل "تحويل آمن" لكل العناصر.
+
+**مثال عملي:**
+تخيل أن لديك بيانات كتاب قادمة من API، وقائمة المؤلفين تأتي كـ `dynamic`:
+
+```dart
+class BookModel {
+  final String title;
+  final List<String>? authors;
+
+  BookModel({required this.title, this.authors});
+
+  factory BookModel.fromJson(Map<String, dynamic> json) {
+    return BookModel(
+      title: json['title'] as String,
+      // هنا json['authors'] يرجع كـ List<dynamic>
+      // نستخدم .cast<String>() لتحويله إلى List<String>
+      authors: (json['authors'] as List<dynamic>?)?.cast<String>(),
+    );
+  }
+}
+
+void main() {
+  Map<String, dynamic> apiResponse = {
+    "title": "Clean Code",
+    "authors": ["Robert C. Martin", "Dean Wampler"] // هذه في الأصل dynamic list
+  };
+
+  BookModel book = BookModel.fromJson(apiResponse);
+  print(book.authors); // المخرجات: [Robert C. Martin, Dean Wampler]
+}
+factory VolumeInfo.fromJson(Map<String, dynamic> json) => VolumeInfo(
+    title: json['title'] as String,
+    authors: (json['authors'] as List<dynamic>?)?.cast<String>(),
+  );
+
+--------------------------------------------------------------------------------
 - دي مكتبة ال fl_chart لرسم الرسوم البيانية:
 int activeIndex = -1; // عملتها -1 عشان في البداية مش بيكون فيه سكشن تم اختياره او الوقوف عليه بالماوس
 
