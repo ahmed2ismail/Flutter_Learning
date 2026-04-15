@@ -200,7 +200,123 @@ class FetchFeaturedBooksUseCase implements UseCase<List<BookEntity>> {
   ```
   **ملاحظة:** جعل الـ Model يرث من الـ Entity هو أسلوب شائع لتجنب كتابة دالة تحويل (mapper function) يدوية.
 
-**ب. Repositories (التنفيذ - Implementation):**
+### بعد كده بنعمل ملف ال ApiService اللي هو هيكون مسؤول عن التعامل مع ال API باستخدام Dio او Http ودا بيبقى في ال core folder/utils/api_service عشان هو مسؤول عن جلب البيانات من مصدرها الخارجي (ال API) وتحويلها ل Models وبيكون فيه كل العمليات زي ال POST, GET, PUT, DELETE.
+
+**ب. Data Sources (مصادر البيانات):**
+- هي الفئات المسؤولة عن التعامل المباشر مع مصادر البيانات.
+- **Remote Data Source:** تتعامل مع الـ API (باستخدام `http` أو `dio`).
+- **Local Data Source:** تتعامل مع قواعد البيانات المحلية (مثل `shared_preferences`, `isar`, `sqlite`).
+- **مثال (Remote):**
+  ```dart
+  // lib/features/weather/data/datasources/remote_data_source.dart
+  import 'package:dio/dio.dart';
+  import '../domain/entities/weather_entity.dart';
+
+  abstract class WeatherRemoteDataSource {
+  // هنا بنحدد العقد اللي ال Repository هيستخدمها عشان يجيب البيانات من ال API، في الحالة دي احنا بنقول ان ال Repository هيستخدم ال getWeatherByCity عشان يجيب بيانات الطقس لمدينة معينة
+  // يعني انا هنا بقول ايه اللي هيحصل في ال remoteDataSource وليس هيحصل ازاي لان ازاي دي هي مسؤولية ال RepositoryImpl اللي هيقرر يجيب البيانات من ال API ولا من قاعدة بيانات محلية
+    Future<WeatherEntity> getWeatherByCity(String cityName); --> نفس ال method اللي في WeatherRepository الموجودة في domain/repository/weather_repository.dart
+    هنا بنقول ان ال getWeatherByCity دي هترجع WeatherEntity مش WeatherModel لان ال RepositoryImpl هو اللي هيحول ال WeatherModel ل WeatherEntity عشان يقدر يرجعها لل UseCase اللي هيستخدمها في ال Presentation Layer
+    مثال تبع ال clean_arch_bookly_app: النوع هنا هو Future<List<BookEntity>> من غير Either عشان احنا بنرجع List of BookEntity يعني قائمة من الكتب وكل كتاب هو عبارة عن BookEntity فقط ومش بنتعامل مع الاخطاء هنا عشان دي لجلب البيانات فقط اما التعامل مع الاخطاء فدي في ال impl بتاع ال homeRepo لان ال homeRepo هو اللي بيتعامل مع ال data sources كلها سواء كانت remote او local وبيتعامل مع الاخطاء اللي ممكن تحصل في اي منهم وبيرجع النتيجة اللي جايه من ال data source سواء كانت بيانات او خطأ للي فوق اللي هو ال use case
+
+  }
+
+  class WeatherRemoteDataSourceImpl implements WeatherRemoteDataSource {
+    final Dio dio;
+
+    WeatherRemoteDataSourceImpl({required this.dio});
+
+    @override
+    Future<WeatherModel> getWeatherByCity(String cityName) async {
+      final response = await dio.get('https://api.weatherapi.com/v1/current.json?key=YOUR_API_KEY&q=$cityName');
+
+      if (response.statusCode == 200) {
+        return WeatherModel.fromJson(response.data);
+      } else {
+        throw Exception('Server Exception!');
+      }
+    }
+  }
+  ```
+
+import 'package:clean_arch_bookly_app/Core/utils/api_service.dart';
+import 'package:clean_arch_bookly_app/Features/home/data/models/books_model/books_model.dart';
+import 'package:clean_arch_bookly_app/Features/home/domain/entities/book_entity.dart';
+import 'package:clean_arch_bookly_app/constants.dart';
+import 'package:hive/hive.dart';
+
+abstract class HomeRemoteDataSource {
+  // النوع هنا هو Future<List<BookEntity>> من غير Either عشان احنا بنرجع List of BookEntity يعني قائمة من الكتب وكل كتاب هو عبارة عن BookEntity فقط ومش بنتعامل مع الاخطاء هنا عشان دي لجلب البيانات فقط اما التعامل مع الاخطاء فدي في ال impl بتاع ال homeRepo لان ال homeRepo هو اللي بيتعامل مع ال data sources كلها سواء كانت remote او local وبيتعامل مع الاخطاء اللي ممكن تحصل في اي منهم وبيرجع النتيجة اللي جايه من ال data source سواء كانت بيانات او خطأ للي فوق اللي هو ال use case
+  Future<List<BookEntity>> fetchFeaturedBooks();
+  Future<List<BookEntity>> fetchNewestBooks();
+}
+
+class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
+  final ApiService apiService;
+
+  HomeRemoteDataSourceImpl(this.apiService);
+
+  @override
+  Future<List<BookEntity>> fetchFeaturedBooks() async {
+    final data = await apiService.getRequest(
+      endpoint: 'volumes?Filtering=free-ebooks&q=programming',
+    );
+    // هنا انا جبت البيانات من ال api وبعدين حولتها لقائمة من ال BookEntity باستخدام ال getBooksList اللي بتحول ال json اللي جايلي من ال api لقائمة من ال BookEntity وبعدين خزنتها في ال hive box اللي اسمه kFeaturedBox عشان اقدر اجيبها تاني لما احتاجها بدون ما احتاج اتصل بال api مرة تانية 
+    var box = Hive.box(kFeaturedBox);
+    box.addAll(getBooksList(data));
+    return getBooksList(data);
+  }
+
+
+  @override
+  Future<List<BookEntity>> fetchNewestBooks() async {
+    final data = await apiService.getRequest(
+      endpoint: 'volumes?Filtering=free-ebooks&q=programming&Sorting=newest',
+    );
+    var box = Hive.box(kNewestBox);
+    box.addAll(getBooksList(data));
+    return getBooksList(data);
+  }
+
+    List<BookEntity> getBooksList(Map<String, dynamic> data) {
+    List<BookEntity> books = [];
+    for (var item in data['items']) {
+      books.add(BooksModel.fromJson(item));
+    }
+    return books;
+  }
+}
+وبالنسبة لل localDataSource:
+import 'package:clean_arch_bookly_app/Features/home/domain/entities/book_entity.dart';
+import 'package:clean_arch_bookly_app/constants.dart';
+import 'package:hive/hive.dart';
+
+abstract class HomeLocalDataSource {
+  // ال type هنا هيكون list<BookEntity> من غير Future عشان دي بيانات محليه يعني مش بتاخد وقت في جلبها زي ال remote data source اللي بتاخد وقت في جلب البيانات من الانترنت فبنستخدم Future عشان نقدر نتعامل مع الوقت ده اما هنا فبنرجع البيانات مباشره من غير ما نحتاج نتعامل مع الوقت لانها متكيشة عندي في الجهاز
+  // انا سميت هنا getLastFeaturedBooks و getLastNewestBooks عشان دي بتجيب اخر بيانات جتلي من ال api يعني اخر قائمة كتب جتلي من ال api سواء كانت featured او newest ودي بتكون مخزنة عندي في الجهاز فلو حصل اي مشكلة في الانترنت او اي حاجة تانية اقدر اجيب البيانات اللي عندي في الجهاز بدل ما اجيبها من ال api مرة تانية ودي بتكون مفيدة جدا في حالة ان المستخدم مش متصل بالانترنت او حصل اي مشكلة في الاتصال بالانترنت فبيقدر يشوف البيانات اللي عنده في الجهاز بدل ما يشوف رسالة خطأ او حاجة زي كده
+  List<BookEntity> getLastFeaturedBooks();
+  List<BookEntity> getLastNewestBooks();
+}
+
+class HomeLocalDataSourceImpl implements HomeLocalDataSource {
+  @override
+  List<BookEntity> getLastFeaturedBooks() {
+    // هنا ممكن نستخدم اي طريقة لتخزين البيانات محليا زي shared preferences او hive او sqflite او اي طريقة تانية حسب ما يناسب التطبيق بتاعك
+    // في المثال ده انا هستخدم hive لتخزين البيانات اللي جايالي من ال api محليا
+    var box = Hive.box<BookEntity>(kFeaturedBox);
+    return box.values.toList();
+  }
+
+  @override
+  List<BookEntity> getLastNewestBooks() {
+    // هنا انا بجيب البيانات اللي مخزنة عندي في ال hive box اللي اسمه kNewestBox وبحولها لقائمة من ال BookEntity وبيرجعها لي ال homeRepo اللي بيستخدمها في ال use case بتاعه عشان يقدر يعرضها في ال ui بتاعه
+    var box = Hive.box<BookEntity>(kNewestBox);
+    return box.values.toList();
+  }
+}
+  ```
+
+**ج. Repositories (التنفيذ - Implementation):**
 - هي فئات حقيقية (Concrete Classes) تقوم بتنفيذ (implements) الـ Abstract Class الخاصة بالـ Repository من طبقة الـ Domain.
 - هي التي تقرر من أين ستأتي البيانات (من مصدر بيانات عن بعد أم محلي) ومن الافضل ان يوجد كلاهما (remote data source, local data source) عشان لما المستخدم يفتح التطبيق يلاقي المحتوي موجود جاهز مش لسه هيحمله لان دا بيستهلك من بيانات النت ليه وكل شوية بيظهرله loading indicator اثناء عملية التحميل ودي تعتبر تجربة سيئة ليه فبنحلها باننا بنعمل local data source مع ال remote data source.
 - **مثال:**
@@ -231,36 +347,56 @@ class FetchFeaturedBooksUseCase implements UseCase<List<BookEntity>> {
   }
   ```
 
-**ج. Data Sources (مصادر البيانات):**
-- هي الفئات المسؤولة عن التعامل المباشر مع مصادر البيانات.
-- **Remote Data Source:** تتعامل مع الـ API (باستخدام `http` أو `dio`).
-- **Local Data Source:** تتعامل مع قواعد البيانات المحلية (مثل `shared_preferences`, `isar`, `sqlite`).
-- **مثال (Remote):**
-  ```dart
-  // lib/features/weather/data/datasources/remote_data_source.dart
-  import 'package:dio/dio.dart';
-  import '../models/weather_model.dart';
+  مثال من ال clean_arch_bookly_app:
+  import 'package:clean_arch_bookly_app/Core/error/failures.dart';
+import 'package:clean_arch_bookly_app/Features/home/data/data_sources/home_local_data_source.dart';
+import 'package:clean_arch_bookly_app/Features/home/data/data_sources/home_remote_data_source.dart';
+import 'package:clean_arch_bookly_app/Features/home/domain/entities/book_entity.dart';
+import 'package:clean_arch_bookly_app/Features/home/domain/repositories/home_repo.dart';
+import 'package:dartz/dartz.dart';
 
-  abstract class WeatherRemoteDataSource {
-    Future<WeatherModel> getWeatherByCity(String cityName);
-  }
+class HomeRepoImpl implements HomeRepo {
+  // هنا انا عملت ال HomeRepoImpl اللي هو ال implementation بتاع ال HomeRepo اللي هو ال repository اللي بيتعامل مع ال data sources كلها سواء كانت remote او local وبيتعامل مع الاخطاء اللي ممكن تحصل في اي منهم وبيرجع النتيجة اللي جايه من ال data source سواء كانت بيانات او خطأ للي فوق اللي هو ال use case وبيستخدم ال HomeRemoteDataSource عشان يجلب البيانات من الانترنت و ال HomeLocalDataSource عشان يجلب البيانات من الجهاز في حالة ان الانترنت مش شغال او حصل اي مشكلة في الاتصال بالانترنت فبيقدر يجيب البيانات اللي عنده في الجهاز بدل ما يشوف رسالة خطأ او حاجة زي كده
+  final HomeRemoteDataSource homeRemoteDataSource;
+  final HomeLocalDataSource homeLocalDataSource;
 
-  class WeatherRemoteDataSourceImpl implements WeatherRemoteDataSource {
-    final Dio dio;
+  HomeRepoImpl({
+    required this.homeRemoteDataSource,
+    required this.homeLocalDataSource,
+  });
 
-    WeatherRemoteDataSourceImpl({required this.dio});
-
-    @override
-    Future<WeatherModel> getWeatherByCity(String cityName) async {
-      final response = await dio.get('https://api.weatherapi.com/v1/current.json?key=YOUR_API_KEY&q=$cityName');
-
-      if (response.statusCode == 200) {
-        return WeatherModel.fromJson(response.data);
-      } else {
-        throw Exception('Server Exception!');
+  @override
+  Future<Either<Failure, List<BookEntity>>> getFeaturedBooks() async {
+    try {
+      // بجيب البيانات من ال local data source الاول عشان اشوف اذا كانت موجودة عندي في الجهاز ولا لا فلو كانت موجودة بستخدمها وارجعها للي فوق اللي هو ال use case اما لو ما كانتش موجودة بجيبها من ال remote data source وبعدين ارجعها للي فوق اللي هو ال use case
+      // بس انا كده بجيب كل مرة نفس البيانات من ال local data source لانها متغيرتش يعني متحدثتش من ال remote data source
+      List<BookEntity> books;
+      books = homeLocalDataSource.getLastFeaturedBooks();
+      if (books.isNotEmpty) {
+        return right(books);
       }
+      books = await homeRemoteDataSource.fetchFeaturedBooks();
+      return right(books);
+    } catch (e) {
+      return left(Failure(e.toString()));
     }
   }
+
+  @override
+  Future<Either<Failure, List<BookEntity>>> getNewestBooks() async {
+    try {
+      List<BookEntity> books;
+      books = homeLocalDataSource.getLastNewestBooks();
+      if (books.isNotEmpty) {
+        return right(books);
+      }
+      books = await homeRemoteDataSource.fetchNewestBooks();
+      return right(books);
+    } catch (e) {
+      return left(Failure(e.toString()));
+    }
+  }
+}
   ```
 
 **ملخص طبقة الـ Data:** هي طبقة التنفيذ، تجلب البيانات من مصادرها (Models)، وتنفذ عقود الـ Domain (Repository Implementation)، وتتعامل مباشرة مع الشبكة أو قاعدة البيانات (Data Sources).
