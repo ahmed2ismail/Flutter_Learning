@@ -2,7 +2,6 @@
 // // ال class دا هستخدمه في ال repository بتاعي عشان احدد ال return type بتاع ال method اللي بتتعامل مع ال api اللي هي الشاشة دي هتتعامل معاها اللي هما featured books و best seller books
 // // هحدد ال errors اللي هتظهرلي في التطبيق في المستقبل فلما ي المستقبل يحصل error في ال api response هحدد ال errors هنا ك subclasses
 // import 'dart:io';
-
 // import 'package:dio/dio.dart';
 // import 'package:hive/hive.dart';
 
@@ -86,6 +85,16 @@
 //     }
 //   }
 // }
+
+// // وبيستخدم في ال repository بتاعه كدا:
+// // try {
+// //       // هنا هتكون ال call بتاع ال api
+// // } catch (e) {
+// //       if (e is DioException) {
+// //         return left(ServerFailure.fromDioError(e));
+// //       }
+// //       return left(ServerFailure(e.toString()));
+// //     }
 
 // // ---------------------------------------------------------
 // // 2. أخطاء التخزين المحلي (Cache Failures)

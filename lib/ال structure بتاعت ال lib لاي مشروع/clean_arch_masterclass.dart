@@ -348,7 +348,7 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
   ```
 
   مثال من ال clean_arch_bookly_app:
-  import 'package:clean_arch_bookly_app/Core/error/failures.dart';
+import 'package:clean_arch_bookly_app/Core/errors/failures.dart'; بنضيف ملف ال failures
 import 'package:clean_arch_bookly_app/Features/home/data/data_sources/home_local_data_source.dart';
 import 'package:clean_arch_bookly_app/Features/home/data/data_sources/home_remote_data_source.dart';
 import 'package:clean_arch_bookly_app/Features/home/domain/entities/book_entity.dart';
@@ -378,7 +378,10 @@ class HomeRepoImpl implements HomeRepo {
       books = await homeRemoteDataSource.fetchFeaturedBooks();
       return right(books);
     } catch (e) {
-      return left(Failure(e.toString()));
+      if (e is DioException) {
+        return left(ServerFailure.fromDioError(e));
+      }
+      return left(ServerFailure(e.toString()));
     }
   }
 
@@ -393,7 +396,10 @@ class HomeRepoImpl implements HomeRepo {
       books = await homeRemoteDataSource.fetchNewestBooks();
       return right(books);
     } catch (e) {
-      return left(Failure(e.toString()));
+      if (e is DioException) {
+        return left(ServerFailure.fromDioError(e));
+      }
+      return left(ServerFailure(e.toString()));
     }
   }
 }
@@ -434,11 +440,32 @@ class HomeRepoImpl implements HomeRepo {
       emit(WeatherLoading());
       final result = await getWeatherByCityUseCase(cityName);
       result.fold(
-        (failure) => emit(WeatherError(message: failure.message)),
+        (failure) => emit(WeatherError(message: failure.errMessage)),
         (weatherEntity) => emit(WeatherLoaded(weather: weatherEntity)),
       );
     }
   }
+  ```
+
+مثال اخر من clean_arch_bookly_app:
+import 'package:clean_arch_bookly_app/Features/home/domain/usecases/fetch_featured_books_use_case.dart';
+import 'package:clean_arch_bookly_app/Features/home/presentation/manager/featured_books_cubit/featured_books_states.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+class FeaturedBooksCubit extends Cubit<FeaturedBooksState> {
+  final FetchFeaturedBooksUseCase fetchFeaturedBooksUseCase;
+
+  FeaturedBooksCubit(this.fetchFeaturedBooksUseCase) : super(FeaturedBooksInitial());
+
+  Future<void> fetchFeaturedBooks() async {
+    emit(FeaturedBooksLoading());
+    final result = await fetchFeaturedBooksUseCase();
+    result.fold(
+      (failure) => emit(FeaturedBooksFailure(failure.errMessage)),
+      (books) => emit(FeaturedBooksSuccess(books)), // books is: List<BookEntity> books
+    );
+  }
+}
   ```
 
 **مثال للـ View (باستخدام BlocBuilder):**
@@ -532,7 +559,56 @@ Future<void> init() async {
 }
 ```
 ثم في `main.dart`، نستدعي `await di.init();` قبل `runApp()`.
-وفي الـ `BlocProvider`، نستخدم `create: (context) => sl<WeatherCubit>()`.
+وفي الـ `BlocProvider`، نستخدم `create: (context) => di.sl<WeatherCubit>()..fetchWeather('Cairo');`.
+
+مثال من ال clean_arch_bookly_app:
+// lib/core/di/injection_container.dart
+
+final sl = GetIt.instance; // sl = Service Locator
+
+Future<void> init() async {
+  // here we will register all our dependencies like cubits, use cases, repositories, data sources, etc.
+
+  // Cubits
+  sl.registerFactory(() => FeaturedBooksCubit(sl<FetchFeaturedBooksUseCase>()));
+  sl.registerFactory(
+    () => NewestBooksCubit(
+      fetchBestNewestBooksUseCase: sl<FetchBestNewestBooksUseCase>(),
+    ),
+  );
+
+  // Use Cases
+  sl.registerLazySingleton(() => FetchFeaturedBooksUseCase(sl<HomeRepo>()));
+  sl.registerLazySingleton(() => FetchBestNewestBooksUseCase(sl<HomeRepo>()));
+
+  // Repositories
+  sl.registerLazySingleton<HomeRepo>(
+    () => HomeRepoImpl(
+      homeRemoteDataSource: sl<HomeRemoteDataSource>(),
+      homeLocalDataSource: sl<HomeLocalDataSource>(),
+    ),
+  );
+
+  // Data Sources
+  sl.registerLazySingleton<HomeRemoteDataSource>(
+    () => HomeRemoteDataSourceImpl(sl<ApiService>()),
+  );
+  sl.registerLazySingleton<HomeLocalDataSource>(
+    () => HomeLocalDataSourceImpl(),
+  );
+
+  // Network
+  sl.registerLazySingleton<ApiService>(() => ApiService(sl<Dio>()));
+
+  // External Packages
+  // Dio
+  // هنا انا سجلت ال Dio في ال injection container عشان اقدر استخدمه في اي مكان في التطبيق من غير ما اعمل instance جديد منه كل مرة
+  sl.registerLazySingleton<Dio>(() => Dio());
+}
+
+ثم في `main.dart`، نستدعي `await di.init();` قبل `runApp()`.
+وفي الـ `BlocProvider`، نستخدم `create: (context) => di.sl<FeaturedBooksCubit>()..fetchFeaturedBooks();`. --> كده احنا بنجيب ال FeaturedBooksCubit من ال Service Locator اللي هو sl وبعد ما جبناه بنستدعي علطول ال fetchFeaturedBooks() عشان يجيب البيانات من ال api ويعرضها في ال ui بتاعنا
+```
 
 ================================================================================
 ====================== هيكل المجلدات (Folder Structure) ======================

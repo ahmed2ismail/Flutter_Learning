@@ -7,36 +7,38 @@
 //   ApiService(this._dio);
 
 //   Future<dynamic> getRequest({
-//     required String? endpoint,
-//     Map<String, String>? headers,
+//     required String endpoint,
+//     Map<String, dynamic>? headers,
 //     String? token,
 //     // token دي اللي هي ال authorization token اللي بتبعتها في ال headers عشان تقدر توصل لل api لو كانت محمية ب token
 //     // وال toke دي زي مثلا token بتاع ال user اللي عامل login في التطبيق عشان يقدر يوصل لل api ويجيب بياناته الشخصية او يعمل اي حاجة محتاجة authentication
 //   }) async {
+//     // السطر ده بيحل مشكلة الـ Null. لو الـ headers مش مبعوتة، بنعمل خريطة فاضية عشان التطبيق ميضربش لما نعمل addAll
+//     headers ??= {};
+
 //     if (token != null) {
 //       // headers!['Authorization'] = 'Bearer $token';
-//       headers!.addAll({'Authorization': 'Bearer $token'});
+//       headers.addAll({'Authorization': 'Bearer $token'});
 //     }
 //     log('url: $_baseUrl$endpoint, headers: $headers, token: $token');
-//     final response = await _dio.get('$_baseUrl$endpoint');
-//     if (response.statusCode == 200 || response.statusCode == 201) {
-//       return response.data;
-//     } else {
-//       throw Exception(
-//         'Failed to load data ... Status Code: ${response.statusCode} with body: ${response.data}',
-//       );
-//     }
+//     // ضفنا الـ options عشان نبعت الـ headers مع الـ Get request
+//     final response = await _dio.get(
+//       '$_baseUrl$endpoint',
+//       options: Options(headers: headers),
+//     );
+//     return response.data;
 //   }
 
 //   Future<dynamic> postRequest({
-//     required String? endpoint,
-//     Map<String, String>? bodyData,
-//     Map<String, String>? headers,
+//     required String endpoint,
+//     Map<String, dynamic>? bodyData,
+//     Map<String, dynamic>? headers,
 //     String? token,
 //   }) async {
+//     headers ??= {};
 //     if (token != null) {
 //       // headers!['Authorization'] = 'Bearer $token';
-//       headers!.addAll({'Authorization': 'Bearer $token'});
+//       headers.addAll({'Authorization': 'Bearer $token'});
 //     }
 //     log(
 //       'url: $_baseUrl$endpoint, body: $bodyData, headers: $headers, token: $token',
@@ -46,25 +48,21 @@
 //       data: bodyData,
 //       options: Options(headers: headers),
 //     );
-//     if (response.statusCode == 200 || response.statusCode == 201) {
-//       return response.data;
-//     } else {
-//       throw Exception(
-//         'Failed to post data ... Status Code: ${response.statusCode} with body: ${response.data}',
-//       );
-//     }
+//     return response.data;
 //   }
 
 //   // ال putRequest بتستخدم عشان تعدل بيانات موجودة بالفعل في ال api وغالبا بتبقى محتاجة id عشان تعرف تعدل على ايه ونوع البيانات اللي بتبعتها بيبقى شبه ال postRequest بس الفرق ان ال method بتاعتها بتبقى put مش post ونوع البيانات اللي بتبعتها بيبقى غالبا x-www-formurlencoded اللي هو عبارة عن json مش form-data
 //   // putRequest is used to update existing data in the API. It usually requires an ID to specify which data to update. The data type sent is similar to postRequest, but the method is 'PUT' instead of 'POST', and the content type is often 'x-www-form-urlencoded', which is like JSON rather than form-data.
 //   Future<dynamic> putRequest({
-//     required String? endpoint,
-//     Map<String, String>? bodyData,
-//     Map<String, String>? headers,
+//     required String endpoint,
+//     Map<String, dynamic>? bodyData,
+//     Map<String, dynamic>? headers,
 //     String? token,
 //   }) async {
+//     headers ??= {};
+
 //     if (token != null) {
-//       headers!.addAll({
+//       headers.addAll({
 //         'Authorization': 'Bearer $token',
 //         'Content-Type': 'application/x-www-form-urlencoded',
 //       });
@@ -75,36 +73,28 @@
 //     final response = await _dio.put(
 //       '$_baseUrl$endpoint',
 //       data: bodyData,
-//       options: Options(headers: headers)
+//       options: Options(headers: headers),
 //     );
-//     if (response.statusCode == 200) {
-//       dynamic data = response.data;
-//       return data;
-//     } else {
-//       throw Exception(
-//         'Failed to put data ... Status Code: ${response.statusCode} with body: ${response.data}',
-//       );
-//     }
+//     return response.data;
 //   }
 
 //   Future<dynamic> deleteRequest({
-//     required String? endpoint,
-//     Map<String, String>? headers,
+//     required String endpoint,
+//     Map<String, dynamic>? headers,
 //     String? token,
 //   }) async {
+//     headers ??= {};
+
 //     if (token != null) {
-//       headers!.addAll({'Authorization': 'Bearer $token'});
+//       headers.addAll({'Authorization': 'Bearer $token'});
 //     }
 //     log('url: $_baseUrl$endpoint, headers: $headers, token: $token');
-//     final response = await _dio.delete('$_baseUrl$endpoint', options: Options(headers: headers));
-//     if (response.statusCode == 200) {
-//       dynamic data = response.data;
-//       return data;
-//     } else {
-//       throw Exception(
-//         'Failed to delete data ... Status Code: ${response.statusCode} with body: ${response.data}',
-//       );
-//     }
+
+//     final response = await _dio.delete(
+//       '$_baseUrl$endpoint',
+//       options: Options(headers: headers),
+//     );
+//     return response.data;
 //   }
 // }
 
