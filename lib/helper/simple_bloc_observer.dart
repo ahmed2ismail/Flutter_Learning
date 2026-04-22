@@ -31,46 +31,46 @@ void main() {
 // import 'package:flutter/material.dart'; // أو import 'package:flutter/foundation.dart';
 // import 'package:flutter_bloc/flutter_bloc.dart';
 
-// class SimpleBlocObserver implements BlocObserver {
+// class SimpleBlocObserver extends BlocObserver {
 //   @override
 //   void onChange(BlocBase<dynamic> bloc, Change<dynamic> change) {
-//     debugPrint('Change -- ${bloc.runtimeType} => $change');
 //     super.onChange(bloc, change);
+//     debugPrint('Change -- ${bloc.runtimeType} => $change');
 //   }
 
 //   @override
 //   void onTransition(Bloc<dynamic, dynamic> bloc, Transition<dynamic, dynamic> transition) {
-//     debugPrint('Transition -- ${bloc.runtimeType} => $transition');
 //     super.onTransition(bloc, transition);
+//     debugPrint('Transition -- ${bloc.runtimeType} => $transition');
 //   }
 
 //   @override
 //   void onClose(BlocBase<dynamic> bloc) {
-//     debugPrint('Close -- ${bloc.runtimeType} => $bloc');
 //     super.onClose(bloc);
+//     debugPrint('Close -- ${bloc.runtimeType} => $bloc');
 //   }
 
 //   @override
 //   void onCreate(BlocBase<dynamic> bloc) {
-//     debugPrint('Create -- ${bloc.runtimeType} => $bloc');
 //     super.onCreate(bloc);
+//     debugPrint('Create -- ${bloc.runtimeType} => $bloc');
 //   }
 
 //   @override
 //   void onDone(Bloc<dynamic, dynamic> bloc, Object? event, [Object? error, StackTrace? stackTrace]) {
-//     debugPrint('Done -- ${bloc.runtimeType} => $event,/ error: $error,/ stackTrace: $stackTrace');
 //     super.onDone(bloc, event, error, stackTrace);
+//     debugPrint('Done -- ${bloc.runtimeType} => $event,/ error: $error,/ stackTrace: $stackTrace');
 //   }
 
 //   @override
 //   void onError(BlocBase<dynamic> bloc, Object error, StackTrace stackTrace) {
-//     debugPrint('Error -- ${bloc.runtimeType} => $error');
 //     super.onError(bloc, error, stackTrace);
+//     debugPrint('Error -- ${bloc.runtimeType} => $error');
 //   }
 
 //   @override
 //   void onEvent(Bloc<dynamic, dynamic> bloc, Object? event) {
-//     debugPrint('Event -- ${bloc.runtimeType} => $event');
 //     super.onEvent(bloc, event);
+//     debugPrint('Event -- ${bloc.runtimeType} => $event');
 //   }
 // }

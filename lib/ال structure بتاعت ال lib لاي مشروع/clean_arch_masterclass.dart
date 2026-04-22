@@ -149,14 +149,14 @@ class FetchFeaturedBooksUseCase implements UseCase<List<BookEntity>> {
   abstract class UseCase<T, Param> {
     Future<Either<Failure, T>> call([Param param]);
   }
-  class FetchFeaturedBooksUseCase implements UseCase<List<BookEntity>, NoParameter> {
+  class FetchFeaturedBooksUseCase implements UseCase<List<BookEntity>, int> {
   final HomeRepo homeRepo;
 
   FetchFeaturedBooksUseCase(this.homeRepo);
 
 @override
-  Future<Either<Failure, List<BookEntity>>> call([NoParameter? param]) async {
-    return await homeRepo.getFeaturedBooks();
+  Future<Either<Failure, List<BookEntity>>> call([int pageNumber =0]) async {
+    return await homeRepo.getFeaturedBooks(pageNumber: pageNumber);
   }
 }
   ```
@@ -239,6 +239,7 @@ class FetchFeaturedBooksUseCase implements UseCase<List<BookEntity>> {
   }
   ```
 
+مثال من clean_arch_bookly_app:
 import 'package:clean_arch_bookly_app/Core/utils/api_service.dart';
 import 'package:clean_arch_bookly_app/Features/home/data/models/books_model/books_model.dart';
 import 'package:clean_arch_bookly_app/Features/home/domain/entities/book_entity.dart';
@@ -247,8 +248,9 @@ import 'package:hive/hive.dart';
 
 abstract class HomeRemoteDataSource {
   // النوع هنا هو Future<List<BookEntity>> من غير Either عشان احنا بنرجع List of BookEntity يعني قائمة من الكتب وكل كتاب هو عبارة عن BookEntity فقط ومش بنتعامل مع الاخطاء هنا عشان دي لجلب البيانات فقط اما التعامل مع الاخطاء فدي في ال impl بتاع ال homeRepo لان ال homeRepo هو اللي بيتعامل مع ال data sources كلها سواء كانت remote او local وبيتعامل مع الاخطاء اللي ممكن تحصل في اي منهم وبيرجع النتيجة اللي جايه من ال data source سواء كانت بيانات او خطأ للي فوق اللي هو ال use case
-  Future<List<BookEntity>> fetchFeaturedBooks();
-  Future<List<BookEntity>> fetchNewestBooks();
+  Future<List<BookEntity>> fetchFeaturedBooks({int pageNumber = 0});
+  Future<List<BookEntity>> fetchNewestBooks({int pageNumber = 0});
+  // احنا سجلنا ال {int pageNumber = 0} في ال functions الموجودة في ال HomeRepo لان احنا هنستخدم ال pagination في جلب البيانات من ال API فكل ما المستخدم يطلب صفحة جديدة من الكتب هنزود ال pageNumber ب 1 عشان يجيبلي الصفحة اللي بعد كدا من الكتب يعني لو المستخدم طلب الصفحة الاولى هتكون pageNumber = 0 ولو طلب الصفحة التانية هتكون pageNumber = 1 ولو طلب الصفحة التالتة هتكون pageNumber = 2 وهكذا يعني كل ما زادت الصفحة بزيادة 1 في ال pageNumber عشان يجيب الكتب اللي بعد ال 10 كتب اللي جايين في الصفحة اللي قبلها
 }
 
 class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
@@ -257,24 +259,31 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
   HomeRemoteDataSourceImpl(this.apiService);
 
   @override
-  Future<List<BookEntity>> fetchFeaturedBooks() async {
+  Future<List<BookEntity>> fetchFeaturedBooks({int pageNumber = 0}) async {
     final data = await apiService.getRequest(
-      endpoint: 'volumes?Filtering=free-ebooks&q=programming',
+      endpoint: 'volumes?Filtering=free-ebooks&q=subject:Programming&startIndex=${pageNumber * 10}',
+      // عملنا pageNumber * 10 عشان كل صفحة فيها 10 كتب فلو الصفحة الاولى هتكون startIndex = 0 ولو الصفحة التانية هتكون startIndex = 10 ولو الصفحة التالتة هتكون startIndex = 20 وهكذا يعني كل ما زادت الصفحة بزيادة 10 في ال startIndex عشان يجيب الكتب اللي بعد ال 10 كتب اللي جايين في الصفحة اللي قبلها
     );
     // هنا انا جبت البيانات من ال api وبعدين حولتها لقائمة من ال BookEntity باستخدام ال getBooksList اللي بتحول ال json اللي جايلي من ال api لقائمة من ال BookEntity وبعدين خزنتها في ال hive box اللي اسمه kFeaturedBox عشان اقدر اجيبها تاني لما احتاجها بدون ما احتاج اتصل بال api مرة تانية 
-    var box = Hive.box(kFeaturedBox);
+    ممكن كده:
+    var box = Hive.box<BookEntity>(kFeaturedBox);
     box.addAll(getBooksList(data));
+    او نستخدم الملف اللي فصلناه فيه:
+    saveBooksDataLocaly(data, boxName: kFeaturedBox);
     return getBooksList(data);
   }
 
 
   @override
-  Future<List<BookEntity>> fetchNewestBooks() async {
+  Future<List<BookEntity>> fetchNewestBooks({int pageNumber = 0}) async {
     final data = await apiService.getRequest(
-      endpoint: 'volumes?Filtering=free-ebooks&q=programming&Sorting=newest',
+      endpoint: 'volumes?Filtering=free-ebooks&q=programming&Sorting=newest&startIndex=${pageNumber * 10}',
     );
-    var box = Hive.box(kNewestBox);
+    ممكن كده:
+    var box = Hive.box<BookEntity>(kNewestBox);
     box.addAll(getBooksList(data));
+    او نستخدم الملف اللي فصلناه فيه:
+    saveBooksDataLocaly(data, boxName: kNewestBox);
     return getBooksList(data);
   }
 
@@ -285,6 +294,12 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
     }
     return books;
   }
+
+  ممكن نفصلها في ملف لوحدها زي كده Core/utils/functions/save_books_localy.dart.
+  void saveBooksDataLocaly(List<BookEntity> data, {required String boxName}) {
+  var box = Hive.box<BookEntity>(boxName);
+  box.addAll(data);
+}
 }
 وبالنسبة لل localDataSource:
 import 'package:clean_arch_bookly_app/Features/home/domain/entities/book_entity.dart';
@@ -425,6 +440,7 @@ class HomeRepoImpl implements HomeRepo {
 - تدير حالات الواجهة (مثل `Loading`, `Success`, `Error`).
 - تستقبل الأحداث من الـ View وتقرر أي Use Case يجب استدعاؤه.
 - **مثال (باستخدام Cubit):**
+-- وبما اننا هنستخدم ال (Bloc/cubit) هنعمل ملف ال SimpleBlocObserver بتاعنا في Core folder/utils/simple_bloc_observer.dart عشان نتابع التغيرات اللي بتحصل في ال Bloc او Cubit بتاعنا ونعرف ايه اللي بيحصل في ال Bloc او Cubit بتاعنا
   ```dart
   // lib/features/weather/presentation/cubit/weather_cubit.dart
   import 'package:flutter_bloc/flutter_bloc.dart';
@@ -457,9 +473,9 @@ class FeaturedBooksCubit extends Cubit<FeaturedBooksState> {
 
   FeaturedBooksCubit(this.fetchFeaturedBooksUseCase) : super(FeaturedBooksInitial());
 
-  Future<void> fetchFeaturedBooks() async {
-    emit(FeaturedBooksLoading());
-    final result = await fetchFeaturedBooksUseCase();
+  Future<void> fetchFeaturedBooks({int pageNumber = 0}) async {
+    emit(FeaturedBooksLoading());;
+    final result = await fetchFeaturedBooksUseCase(pageNumber);
     result.fold(
       (failure) => emit(FeaturedBooksFailure(failure.errMessage)),
       (books) => emit(FeaturedBooksSuccess(books)), // books is: List<BookEntity> books

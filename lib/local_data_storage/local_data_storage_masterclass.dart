@@ -445,7 +445,7 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
       endpoint: 'volumes?Filtering=free-ebooks&q=programming',
     );
     // هنا انا جبت البيانات من ال api وبعدين حولتها لقائمة من ال BookEntity باستخدام ال getBooksList اللي بتحول ال json اللي جايلي من ال api لقائمة من ال BookEntity وبعدين خزنتها في ال hive box اللي اسمه kFeaturedBox عشان اقدر اجيبها تاني لما احتاجها بدون ما احتاج اتصل بال api مرة تانية 
-    var box = Hive.box(kFeaturedBox);
+    var box = Hive.box<BookEntity>(kFeaturedBox);
     box.addAll(getBooksList(data));
     return getBooksList(data);
   }
@@ -456,7 +456,7 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
     final data = await apiService.getRequest(
       endpoint: 'volumes?Filtering=free-ebooks&q=programming&Sorting=newest',
     );
-    var box = Hive.box(kNewestBox);
+    var box = Hive.box<BookEntity>(kNewestBox);
     box.addAll(getBooksList(data));
     return getBooksList(data);
   }

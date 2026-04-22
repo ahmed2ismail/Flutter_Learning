@@ -1,5 +1,72 @@
 /*
 --------------------------------------------------------------------------------
+لتغيير اسم التطبيق للاندرويد والايفون:
+android و ios بيستخدموا اسم التطبيق من مكانين مختلفين في ملفاتهم الخاصة، فلو عايز تغير اسم التطبيق لازم تغيره في الاتنين.
+android:
+for android: android/app/src/main/AndroidManifest.xml:
+
+<application
+        android:label="App Name(Fruits Hub)"
+
+ios:
+for ios: ios\Runner\Info.plist
+
+<key>CFBundleDisplayName</key> --> السطر 9
+<string>Fruits Hub</string> --> السطر 10 ودا هو اسم التطبيق اللي احنا مهتمين نغيره
+<key>CFBundleName</key> --> السطر 17
+<string>fruits_hub</string> --> السطر 18 ودا خاص بالحزمة نفسها فبنسيبه زي مهو
+
+وهنغير الصورة عن طريق باكدج flutter_launcher_icons in dev dependencies لاننا هنستخدمها في ال dev عشان نغير الصورة بس مش هنستخدمها في الكود نفسه يعني مش محتاجينها في ال production
+وبضيف السطور دي في ال pubspecyaml:
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/app_icon.png"
+  min_sdk_android: 21 # android min sdk min:16, default 21
+  web:
+    generate: true
+    image_path: "assets/images/app_icon.png"
+    background_color: "#D9F5D3"
+    theme_color: "#D9F5D3"
+  windows:
+    generate: true
+    image_path: "assets/images/app_icon.png"
+    icon_size: 48 # min:48, max:256, default: 48
+  macos:
+    generate: true
+    image_path: "assets/images/app_icon.png"
+وبعد كده برن ال الامر دا: dart run flutter_launcher_icons وبس كده
+
+--------------------------------------------------------------------------------
+مثال علي ال Extensions in dart:
+extension StringExtensions on String {
+  int toInt() {
+    return int.parse(this);
+  }
+
+  String toTitleCase() {
+    if (this.isEmpty) return this;
+    return this.split(' ').map((word) {
+      if (word.isEmpty) return word;
+      return word[0].toUpperCase() + word.substring(1).toLowerCase();
+    }).join(' ');
+  }
+}
+
+extension NavigatorExtension on BuildContext {
+  toView (Widget view) {
+    Navigator.push(
+      this,
+      MaterialPageRoute(builder: (context) => view),
+    );
+  }
+
+  void navigateTo(String routeName) {
+    Navigator.pushNamed(this, routeName);
+  }
+}
+
+--------------------------------------------------------------------------------
 شرح الكود الخاص بـ primarySwatch في Flutter
 return MaterialApp(
                 theme: ThemeData(

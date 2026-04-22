@@ -22,13 +22,26 @@ linter:
   # producing the lint.
 
   rules:
-    # prefer_const_constructors: true
-    # prefer_const_literals_to_create_immutables: true
-    # prefer_const_declarations: true
-    # prefer_final_fields: true
-    # prefer_const_constructors_in_immutables: true
+    # prefer_const_constructors: true  # تظهر خطًا أزرق تحت الويدجتس التي يمكن أن تكون ثابتة (const).
+    # prefer_const_literals_to_create_immutables: true # تظهر خطًا أزرق تحت القوائم والمجموعات التي يمكن أن تكون ثابتة (const).
+    # prefer_const_declarations: true # تظهر خطًا أزرق تحت المتغيرات التي يمكن أن تكون ثابتة (const).
+    # prefer_final_fields: true # تظهر خطًا أزرق تحت الحقول التي يمكن أن تكون نهائية (final).
+    # prefer_const_constructors_in_immutables: true # تظهر خطًا أزرق تحت الويدجتس التي يمكن أن تكون ثابتة (const) في الفئات غير القابلة للتغيير (immutable classes).
+    # sized_box_for_whitespace: true # تظهر خطًا أزرق تحت المساحات البيضاء (Container مثل ) التي يمكن استبدالها بويدجت SizedBox.
+    # avoid_unnecessary_containers: true # تظهر خطًا أزرق تحت الحاويات (Container) التي لا تحتوي على أي خصائص أو تحتوي فقط على خصائص يمكن تحقيقها باستخدام ويدجت أبسط.
 
-      # avoid_print: false  # Uncomment to disable the `avoid_print` rule
-      # prefer_single_quotes: true  # Uncomment to enable the `prefer_single_quotes` rule
+    # تمنع استخدام `print()` في الكود المنتج (production code) وتشجع على استخدام
+    # حلول تسجيل (logging) أفضل مثل `logger` أو `debugPrint`.
+    # avoid_print: true  # Uncomment to disable the `avoid_print` rule
+
+    # تمنع استخدام `dynamic` كنوع، وتشجع على تحديد أنواع أكثر دقة لزيادة
+    # الأمان في النوع (type safety).
+    # avoid_dynamic_calls: true
+
+    # تمنع استخدام `var` وتشجع على استخدام `final` أو `const` أو تحديد النوع
+    # بشكل صريح لزيادة وضوح الكود.
+    # prefer_final_in_for_each: true
+
+    # prefer_single_quotes: true  # Uncomment to enable the `prefer_single_quotes` rule
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options
