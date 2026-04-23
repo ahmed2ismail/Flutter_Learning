@@ -37,6 +37,153 @@ flutter_launcher_icons:
     image_path: "assets/images/app_icon.png"
 وبعد كده برن ال الامر دا: dart run flutter_launcher_icons وبس كده
 
+وهنغير ال id بتاع ال app كمان عشان نقدر نرفعه علي ال app store, google play:
+from android: android/app/src/main/AndroidManifest.xml
+  <activity
+    android:name="com.yourcompany.yourapp.MainActivity"
+    android:exported="true"
+    android:launchMode="singleTop"
+    android:theme="@style/AppTheme"
+    android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+    android:hardwareAccelerated="true"
+    android:windowSoftInputMode="adjustResize">
+  </activity>
+to
+  <activity
+    android:name="com.fruits_hub.fruits_hub.MainActivity"
+    android:exported="true"
+    android:launchMode="singleTop"
+    android:theme="@style/AppTheme"
+    android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+    android:hardwareAccelerated="true"
+    android:windowSoftInputMode="adjustResize">
+
+from ios: ios\Runner\Info.plist
+  <key>CFBundleIdentifier</key>
+  <string>com.yourcompany.yourapp</string>
+to
+  <key>CFBundleIdentifier</key>
+  <string>com.fruits_hub.fruits_hub</string>
+
+  for android: android/app/build.gradle app:
+  android {
+    defaultConfig {
+        applicationId "com.fruits_hub.fruits_hub" // هنا كمان لازم نغير ال id
+        minSdkVersion 21
+        targetSdkVersion 33
+        versionCode flutterVersionCode.toInteger()
+        versionName flutterVersionName
+    }
+    ...
+    for ios: ios\Runner.xcodeproj\project.pbxproj
+    PRODUCT_BUNDLE_IDENTIFIER = com.fruits_hub.fruits_hub; // هنا كمان لازم نغير ال id
+
+    وبدل منعمل كل الحجات دي بايدينا هنستخدم باكدج rename:
+    ودي عبارة عن command line tool بتساعدنا نغير اسم التطبيق وال id بتاعه في الاندرويد والايفون في خطوة واحدة وبسهولة شديدة عن طريقها بنقدر نغير اسم التطبيق وال id بتاعه سواء كان bundle id او app id
+    بنضيفها في dev dependencies في ال pubspec.yaml:
+dev_dependencies:
+  rename: ^2.0.1
+وبعد كده بنفتح ال terminal ونكتب الامر دا:
+flutter pub global activate rename --> عشان يفعل الباكدج وبيتعمل مرة واحدة فقط
+rename help --> عشان اعرف ازاي استخدم الباكدج
+rename getAppName --targets ios,android --> عشان يجيبلي اسم التطبيق الحالي في الاندرويد و الايفون
+rename getBundleId --targets ios,android --> عشان يجيبلي ال id الحالي في الاندرويد و الايفون
+rename appname "Fruits Hub" --targets ios,android --> عشان يغيرلي اسم التطبيق في الاندرويد و الايفون
+rename bundleid "com.yourcompany.yourapp" --targets ios,android --> عشان يغيرلي ال id في الاندرويد و الايفون
+rename setAppName --targets ios,android --value "Fruits Hub" --> عشان يغيرلي اسم التطبيق في الاندرويد و الايفون
+rename setBundleId --targets ios,android --value "com.yourcompany.yourapp" --> عشان يغيرلي ال id في الاندرويد و الايفون
+rename setAppName --targets ios,android --value "Fruits Hub" && rename setBundleId --targets ios,android --value "com.fruits_hub.fruits_hub" --> عشان يغيرلي اسم التطبيق وال id في الاندرويد و الايفون في خطوة واحدة
+
+الفرق بين الـ BundleId والـ AppId وكيفية كتابتهم:
+ملحوظة مهمة ال bundleId للاندرويد بيكون بين كل كلمة والتانية _ اما ال ios بتكون اول كلمة small والتانية capital
+مثال: BundleId for Android "com.fruits_hub.fruits_hub" اما BundleId for iOS "com.fruitsHub.fruitsHub" وبالتالي نستخدم لكل واحدة امر لوحده لما نيجي نغيره يعني منغيرش الاتنين بامر واحد ونستسهل
+ال BundleId هو معرف التطبيق (Unique Identifier) اللي بيستخدمه نظام التشغيل (Operating System) عشان يميز تطبيقك عن التطبيقات التانية، وبيكون في شكل اسم نطاق مقلوب (Reverse Domain Name) زي "com.yourcompany.yourapp".
+ال AppId هو معرف التطبيق داخل متجر التطبيقات (App Store) وبيكون مختلف عن BundleId.
+وبنغير ال AppId بشكل منفصل لان ال rename package مش بتعرف تغيره فبنغيره يدوي زي مذكرنا فوق
+
+1. الـ BundleId (أو الـ Package Name في أندرويد):
+- هو المعرف الفريد للتطبيق على مستوى نظام التشغيل (Android/iOS).
+- يجب أن يكون فريداً تماماً ولا يتكرر لأي تطبيق آخر في المتجر.
+- طريقة الكتابة: يتبع نظام (Reverse Domain Name) ويكون كله حروف صغيرة في الأندرويد أما في iOS يفضل استخدام CamelCase لبعض الكلمات.
+- مثال أندرويد: `com.fruits_hub.fruits_hub`
+- مثال آي أو إس: `com.fruitsHub.fruitsHub`
+
+2. الـ AppId (أو الـ Apple ID / Store ID):
+- هو رقم تعريفي فريد (رقم فقط) بيتم إنشاؤه تلقائياً من قبل المتجر (App Store أو Google Play) بمجرد ما ترفع التطبيق أو تنشئه على لوحة التحكم الخاصة بالمطورين.
+- لا علاقة له بطريقة تسمية الـ BundleId كحروف، هو مجرد "رقم تسلسلي" للتطبيق داخل قاعدة بيانات المتجر.
+- مثال: `1234567890`
+
+هل يجب أن يكونوا متطابقين؟
+- لا يمكن أن يتطابقوا لأن الـ BundleId عبارة عن نص (String) والـ AppId عبارة عن رقم (Number).
+- لكن الـ BundleId هو الذي يربط الكود الخاص بك بالـ AppId الموجود على المتجر.
+
+مثال توضيحي للملفات:
+في أندرويد (build.gradle):
+defaultConfig {
+    applicationId "com.fruits_hub.fruits_hub" // هذا هو الـ BundleId
+}
+
+في iOS (Xcode Project Settings):
+PRODUCT_BUNDLE_IDENTIFIER = com.fruitsHub.fruitsHub; // هذا هو الـ BundleId
+
+بعد رفع التطبيق على App Store Connect، ستحصل على App ID مثل:
+App ID: 1672345980 (هذا الرقم تستخدمه مثلاً عند ربط إعلانات أو مشاركة رابط التطبيق).
+
+--------------------------------------------------------------------------------
+شرح مكتبة Sentry في Flutter:
+Sentry هي أداة قوية جداً لمراقبة الأخطاء (Error Tracking) وتتبع أداء التطبيق (Performance Monitoring). وظيفتها الأساسية إنها بتبلغك فوراً لما يحصل Crash أو Error عند المستخدم في النسخة الـ Production، وبتبعتلك تفاصيل دقيقة عن الجهاز، الإصدار، ومكان الخطأ في الكود بالظبط.
+
+1. خطوات الربط الأساسية:
+أولاً: بنضيف المكتبة في الـ pubspec.yaml:
+dependencies:
+  sentry_flutter: ^8.0.0 # تأكد من استخدام أحدث إصدار
+
+ثانياً: بنجيب الـ DSN من موقع Sentry (بعد ما تعمل Project جديد هناك).
+
+2. كيفية الاستخدام في ملف main.dart:
+بدل ما بننادي runApp مباشرة، بنستخدم SentryFlutter.init عشان نغلف التطبيق كله ونقدر نلقط أي خطأ يحصل في أي مكان.
+
+import 'package:flutter/widgets.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
+
+Future<void> main() async {
+  if (kReleaseMode) {
+    // في وضع الإنتاج (Production)، بنستخدم Sentry لالتقاط الأخطاء
+    await SentryFlutter.init(
+      (options) {
+        options.dsn = 'https://example@sentry.io/add-your-dsn-here';
+        // حدد نسبة تتبع الأداء (1.0 تعني تتبع كل العمليات)
+        options.tracesSampleRate = .01; // عشان مطلعناش بره ال free version pricing بسرعة
+        // تتبع التفاعلات مع الودجات (الضغط على الأزرار مثلاً)
+        options.enableUserInteractionTracing = true;
+      },
+      appRunner: () => runApp(const MyApp()),
+    );
+  } else {
+    // في وضع التطوير (Development)، بنشغل التطبيق بدون Sentry عشان مايتعبناش بالتقارير
+    runApp(const MyApp());
+  }
+}
+
+3. تسجيل الأخطاء يدوياً (Manual Logging):
+أحياناً بنكون في try-catch وعايزين نبعت الخطأ لـ Sentry حتى لو التطبيق محصلوش Crash:
+
+try {
+  // كود ممكن يعمل مشكلة
+  throw Exception('Something went wrong!');
+} catch (exception, stackTrace) {
+  await Sentry.captureException(
+    exception,
+    stackTrace: stackTrace,
+  );
+}
+
+4. إضافة معلومات إضافية (Context & Tags):
+Sentry.configureScope((scope) {
+  scope.setUser(SentryUser(id: '1234', email: 'user@example.com'));
+});
+
+
 --------------------------------------------------------------------------------
 مثال علي ال Extensions in dart:
 extension StringExtensions on String {
