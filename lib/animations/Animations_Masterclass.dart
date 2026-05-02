@@ -111,6 +111,22 @@ class _ImplicitAnimationsExampleState extends State<ImplicitAnimationsExample> {
               ),
               const SizedBox(height: 30),
 
+              // مثال اخر:
+              AnimatedOpacity(
+                duration: const Duration(seconds: 1),
+                opacity: isVisible ? 1.0 : 0.0,
+                child: const Text('This text will fade in and out'),
+              ),
+               // مثال اخر:
+              // return AnimatedOpacity(
+              //   opacity: currentPageIndex == 0 ? 1.0 : 0.0,
+              //   duration: const Duration(milliseconds: 300),
+              //   child: IgnorePointer( // لو مش عايز المستخدم يقدر يتفاعل مع العنصر لما يكون مخفي (opacity = 0)، بتستخدم IgnorePointer
+              //     ignoring: currentPageIndex != 0,
+              //     child: PageOne(),
+              //   ),
+              // );
+
               // ------------------------------------------------------------------
               // ج) AnimatedCrossFade: ممتازة جداً لو عايز تبدل بين 2 ويدجت مختلفين تماماً بشكل ناعم
               // ------------------------------------------------------------------
@@ -128,6 +144,84 @@ class _ImplicitAnimationsExampleState extends State<ImplicitAnimationsExample> {
               ),
               
               // هناك أيضاً AnimatedSwitcher (مفيدة لو بتبدل بين أكثر من عنصر أو عايز تغير شكل الانتقال من Fade لـ Scale مثلاً).
+              const SizedBox(height: 30),
+              const Text('4. AnimatedSwitcher', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              AnimatedSwitcher(
+                duration: const Duration(seconds: 1),
+                transitionBuilder: (child, animation) {
+                  // هنا بنحدد شكل الانتقال بين العناصر (مثلاً Fade + Scale)
+                  return ScaleTransition(scale: animation, child: FadeTransition(opacity: animation, child: child));
+                },
+                child: showFirstImage
+                    ? const FlutterLogo(key: ValueKey(1), size: 100, style: FlutterLogoStyle.horizontal)
+                    : const FlutterLogo(key: ValueKey(2), size: 100, style: FlutterLogoStyle.stacked),
+              ),
+              ElevatedButton(
+                  onPressed: () => setState(() => showFirstImage = !showFirstImage),
+                  child: const Text('Switch with AnimatedSwitcher'),
+                ),
+
+                // مثال اخر علي AnimatedSwitcher:
+                // return AnimatedSwitcher(
+                //   duration: const Duration(milliseconds: 500),
+                //   transitionBuilder: (child, animation) {
+                //     return FadeTransition(
+                //       opacity: animation,
+                //       child: SlideTransition(
+                //         position: Tween<Offset>(
+                //           begin: const Offset(0, 0.5),
+                //           end: Offset.zero,
+                //         ).animate(animation),
+                //         child: child,
+                //       ),
+                //     );
+                //   },
+                //   child: currentPageIndex == 1
+                //       ? Column(
+                //           key: const ValueKey('GetStarted'),
+                //           children: [
+                //             Padding(
+                //               padding: const EdgeInsets.symmetric(horizontal: 16),
+                //               child: MaterialButton(
+                //                 onPressed: () {
+                //                   // TOdO: Navigate to Login/Home screen
+                //                 },
+                //                 minWidth: double.infinity,
+                //                 height: 54,
+                //                 color: AppColors.green1_500,
+                //                 shape: RoundedRectangleBorder(
+                //                   borderRadius: BorderRadius.circular(16),
+                //                 ),
+                //                 child: Text(
+                //                   S.of(context).OnBoardingWelcomePrefixButton,
+                //                   textAlign: TextAlign.center,
+                //                   style: TextStyles.bold16.copyWith(color: Colors.white),
+                //                 ),
+                //               ),
+                //             ),
+                //             const SizedBox(height: 43),
+                //           ],
+                //         )
+                //       // Use a SizedBox with the same total height to prevent layout jumps during animation.
+                //       : const SizedBox(key: ValueKey('Empty'), height: 54 + 43),
+                // );
+
+
+                // مثال اخر علي AnimatedSwitcher:
+                // return AnimatedSwitcher(
+                //   duration: const Duration(milliseconds: 500),
+                //   transitionBuilder: (child, animation) {
+                //     return SlideTransition(
+                //       position: Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero).animate(animation),
+                //       child: child,
+                //     );
+                //   },
+                //   child: currentPageIndex == 0
+                //       ? const PageOne(key: ValueKey(1))
+                //       : const PageTwo(key: ValueKey(2)),
+                // );
+              const SizedBox(height: 30),
+
             ],
           ),
         ),

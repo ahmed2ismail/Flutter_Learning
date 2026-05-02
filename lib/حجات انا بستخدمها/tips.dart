@@ -183,7 +183,6 @@ Sentry.configureScope((scope) {
   scope.setUser(SentryUser(id: '1234', email: 'user@example.com'));
 });
 
-
 --------------------------------------------------------------------------------
 مثال علي ال Extensions in dart:
 extension StringExtensions on String {
@@ -214,6 +213,98 @@ extension NavigatorExtension on BuildContext {
 }
 
 --------------------------------------------------------------------------------
+Widget Directionality in Flutter:
+- Widget Directionality بيستخدم لتحديد اتجاه النص (Text Direction) في التطبيق، سواء كان من اليسار لليمين (LTR) أو من اليمين لليسار (RTL).
+- عن طريق خاصية ال textDirection، تقدر تحدد اتجاه النصوص داخل ال Widget اللي بتغلفه.
+- textDirection: TextDirection.rtl --> عشان اخلي اتجاه النصوص من اليمين لليسار
+فيه عندي برده EdgeInsetsDirectional اللي بيستخدم لتحديد الحشوة (Padding) أو الهامش (Margin) بناءً على اتجاه النص، يعني بدل ما اكتب EdgeInsets.only(left: 16) ممكن اكتب EdgeInsetsDirectional.only(start: 16) عشان يتغير تلقائياً حسب اتجاه النص سواء كان LTR أو RTL
+
+--------------------------------------------------------------------------------
+Widget PreferredSize in Flutter:
+- Widget PreferredSize بيستخدم لتحديد حجم معين (Size) ل Widget معينة، وغالباً بيستخدم مع AppBar عشان نحدد ارتفاعه.
+- بيحتاج خاصية ال preferredSize اللي بتاخد Size (عرض وارتفاع) عشان تحدد الحجم المطلوب لل Widget اللي بتغلفها.
+- preferredSize: const Size.fromHeight(50) --> عشان اخلي ارتفاع ال AppBar هو 50
+
+--------------------------------------------------------------------------------
+Widget TextSpan في Flutter:
+- Widget TextSpan بيستخدم لعرض نصوص متعددة الأنماط (Multiple Styles) داخل نفس ال Text widget.
+- بيحتاج خاصية ال children اللي بتاخد List من TextSpan عشان تقدر تعرض نصوص مختلفة في نفس ال Text widget.
+- كل TextSpan بيقدر ياخد خصائصه الخاصة زي style, text, وغيرها عشان تميز كل جزء من النص عن التاني.
+- مثال علي مرحبًا بك في FruitHUB في Text widget واحدة باستخدام TextSpan:
+Text.rich(
+  TextSpan(
+    text: 'مرحبًا بك في ', // النص الأساسي
+    style: TextStyle(fontSize: 20, color: Colors.black), // نمط النص الأساسي
+    children: [
+      TextSpan(
+        text: 'FruitHUB', // النص المميز
+        style: TextStyle(fontSize: 20, color: Colors.green, fontWeight: FontWeight.bold), // نمط النص المميز
+      ),
+    ],
+  ),
+)
+
+--------------------------------------------------------------------------------
+return DotsIndicator(
+      dotsCount: dotsCount,
+      // هنا يتم استخدام القيمة المحدثة
+      position: currentPageIndex.toDouble(),
+      // الخاصية الأهم هنا هي position. هذه الخاصية تخبر DotsIndicator أي نقطة يجب أن تكون "نشطة" (active).
+      animate: true,
+      decorator: DotsDecorator(
+        activeColor: AppColors.green1_500,
+        color: AppColors.greenLight.withValues(alpha: 0.5),
+        activeSize: const Size(11, 11),
+        size: const Size(9, 9),
+        spacing: const EdgeInsets.symmetric(horizontal: 5),
+        activeShape: const CircleBorder(),
+        shape: const CircleBorder(),
+      ),
+    );
+
+--------------------------------------------------------------------------------
+Widget Visibility في Flutter:
+- بتستخدم Widget Visibility عشان تتحكم في ظهور أو إخفاء عنصر معين في واجهة المستخدم بناءً على شرط معين.
+- مثال:
+Visibility(
+  visible: isLoggedIn, // شرط الظهور لو كان ب true هيظهر العنصر ولو كان ب false هيختفي
+  child: Text('Welcome back!'), // العنصر اللي هيظهر أو يختفي
+  maintainSize: true, // عشان يحافظ على الحجم حتى لو كان العنصر مخفي يعني بيسيب المساحة اللي كان واخدها زي مهي بس الخاصية دي بتحتاج معاها دي，
+  maintainAnimation: true, // عشان يحافظ على أي تأثيرات أو تحركات حتى لو كان العنصر مخفي بس برده الخاصية دي بتحتاج معاها دي
+  maintainState: true, // عشان يحافظ على حالة العنصر حتى لو كان مخفي يعني لو كان فيه بيانات أو حالة معينة مش هتتغير لما العنصر يختفي
+)
+
+--------------------------------------------------------------------------------
+IgnorePointer في Flutter:
+- Widget IgnorePointer بيستخدم لمنع التفاعل مع عنصر معين في واجهة المستخدم، يعني لو حطيت IgnorePointer على عنصر معين، المستخدم مش هيقدر يضغط عليه أو يتفاعل معاه بأي شكل.
+
+IgnorePointer(
+        ignoring: currentPageIndex != 0,
+        child: TextButton(
+          onPressed: () {
+            // Handle button press
+          },
+          child: Text('Next'),
+        ),
+      ),
+
+--------------------------------------------------------------------------------
+in PageController pageController;
+فيه عندنا حاجة اسمها hasClients ودي بتستخدم عشان تشوف هل ال pageView خلصت بناء كل عناصرها ولا لا ولو ايوة بنفذ حاجة احنا عايزينها.
+مثال:
+pageController.hasClients ? pageController.page!.round() : 0 : pageController.page!.round() : 1
+وبنستخدم نفس الكلام دا عشان نجيب الصفحة في ال initState من خلال ال addLisner:
+@override
+void initState () {
+  super.initState();
+  pageController = PageController();
+  pageController.addListener (() {
+    currentPageIndex = pageController.page!.round();
+    setState (() {});
+  });
+}
+
+--------------------------------------------------------------------------------
 شرح الكود الخاص بـ primarySwatch في Flutter
 return MaterialApp(
                 theme: ThemeData(
@@ -222,7 +313,7 @@ return MaterialApp(
                   //  عندما تقوم بتعيين primarySwatch، فإن Flutter يقوم تلقائيًا بإنشاء مجموعة من الألوان الفاتحة والداكنة بناءً على اللون الذي تختاره،
                   //  ويستخدم هذه الألوان لتلوين عناصر مثل الـ AppBar، الأزرار، مؤشرات التقدم، وغيرها.
                   //  هذا يساعد في الحفاظ على تناسق التصميم عبر التطبيق بأكله.
-                  //  على سبيل المثال، إذا قمت بتعيين primarySwatch: Colors.blue،
+                  //  على سبيل المثال، إذا قمت بتعيين primarySwatch: Colors.blue，
                   //  فإن Flutter سيستخدم درجات مختلفة من اللون الأزرق لتلوين عناصر واجهة المستخدم.
                   primarySwatch: بتاخد لون وبتعمل منه مجموعة الوان متدرجه (لوحه الوان)
                   //  زي ازرق غامق وازرق فاتح وازرق متوسط

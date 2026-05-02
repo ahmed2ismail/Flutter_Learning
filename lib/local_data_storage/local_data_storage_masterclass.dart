@@ -499,7 +499,102 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
   }
 }
 
-- 
+    ```
+### `shared preferences`: للحالات البسيطة جداً
+
+#### ما هي؟ ومتى نستخدمها؟
+`Shared Preferences` هي مكتبة لتخزين البيانات البسيطة في شكل مفتاح-قيمة (Key-Value)، وهي مثالية لحفظ إعدادات المستخدم أو بيانات صغيرة لا تحتاج إلى هيكل معقد.
+
+**استخدمها عندما:**
+- تريد حفظ إعدادات بسيطة مثل (الوضع الليلي، اللغة، حجم الخط).
+- تريد تخزين بيانات صغيرة مثل (توكن المصادقة، حالة تسجيل الدخول).
+
+#### كيف نضيفها ونستخدمها؟
+
+1.  **إضافة المكتبة:**
+    ```yaml
+    dependencies:
+      shared_preferences: ^2.2.2
+
+2.  **مثال عملي (حفظ استجابة API كبيرة كملف JSON مؤقت):**
+// 2. مثال عملي 
+    import 'dart:convert';
+    import 'package:shared_preferences/shared_preferences.dart';
+
+    class CacheManager {
+      // دالة لحفظ استجابة API كاملة (JSON)
+      static Future<void> cacheApiResponse(String key, Map<String, dynamic> jsonResponse) async {
+        final prefs = await SharedPreferences.getInstance();
+        // نحول الـ Map إلى String باستخدام json.encode لأن المكتبة لا تخزن Maps
+        String jsonString = json.encode(jsonResponse);
+        await prefs.setString(key, jsonString);
+        print('Data cached successfully under key: $key');
+      }
+
+      // دالة لاسترجاع الاستجابة وتحويلها مرة أخرى لـ Map
+      static Future<Map<String, dynamic>?> getCachedResponse(String key) async {
+        final prefs = await SharedPreferences.getInstance();
+        String? jsonString = prefs.getString(key);
+        
+        if (jsonString != null) {
+          // نحول الـ String مرة أخرى إلى Map باستخدام json.decode
+          return json.decode(jsonString) as Map<String, dynamic>;
+        }
+        return null; // إذا لم تكن البيانات موجودة
+      }
+
+      // دالة للتحقق من وجود بيانات معينة
+      static Future<bool> hasCache(String key) async {
+        final prefs = await SharedPreferences.getInstance();
+        return prefs.containsKey(key);
+      }
+    }
+  ~~~
+
+    // --- في أي مكان آخر في التطبيق ---
+      // 3. مثال عملي (تخزين حالة شاشات الـ Onboarding):
+      // نستخدم هذا المثال لمنع ظهور شاشات الترحيب للمستخدم أكثر من مرة واحدة.
+
+      static Future<void> setOnboardingVisited() async {
+        final prefs = await SharedPreferences.getInstance();
+        // نحفظ قيمة true للمفتاح 'onboarding_visited'
+        await prefs.setBool('onboarding_visited', true); // بنعمل كده في الاماكن اللي بنضغط فيها واللي فيها منطق ال navigation
+      }
+
+      static Future<bool> isOnboardingVisited() async {
+        final prefs = await SharedPreferences.getInstance();
+        // نرجع القيمة وإذا كانت null (أول مرة يفتح التطبيق) نرجع false
+        return prefs.getBool('onboarding_visited') ?? false; // بنعمل كده في ال main.dart عشان نحدد شاشة البداية بناءً على هل المستخدم فتح التطبيق قبل كده ولا لأ او في الشاشة اللي بتظهر بعد ال onboarding زي ال SplashView في المكان اللي فيه منطق التنقل برده عشان نحدد هل نرجع المستخدم لل onboarding تاني ولا نرجعه لل home page
+      }
+
+      /*
+      // هنكتب دا في الشاشة اللي فيها منطق التنقل:
+        final visited = Prefs.getBool(AppConstants.kOnboardingVisitedKey);
+        if (visited) {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            LoginView.routeName,
+            (route) => false,
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            OnBoardingView.routeName as Route<Object?>,
+          );
+        }
+
+      كيفية الاستخدام في ملف main.dart لتحديد شاشة البداية:
+      
+      void main() async {
+        WidgetsFlutterBinding.ensureInitialized(); // تأكد من تهيئة Flutter قبل استخدام SharedPreferences
+        bool visited = await CacheManager.isOnboardingVisited();
+        
+        runApp(MaterialApp(
+          home: visited ? const HomePage() : const OnBoardingPage(),
+        ));
+      }
+      */
+
     ```
 
 ### ب. `isar`: الجيل الجديد من قواعد البيانات
