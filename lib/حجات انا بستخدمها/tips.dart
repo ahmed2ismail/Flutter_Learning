@@ -325,6 +325,7 @@ MaterialApp(
         theme: ThemeData(
           brightness: Brightness.dark, ==> عشان اخلي ثيم التطبيق داكن
           primarySwatch: Colors.blue, ==> عشان اخلي اللون الأساسي للتطبيق هو الأزرق
+          colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primaryColor), --> عشان اخلي اللون الأساسي للتطبيق هو اللون اللي انا عايزه من خلال ال seedColor وده بيعمل ليه مجموعة من الالوان المتدرجة منه زي ما شرحنا في ال primarySwatch بس هنا بستخدم colorScheme عشان اقدر احدد لون معين مش لازم يكون من الالوان الجاهزة في Flutter زي Colors.blue
           theme: ThemeData.dark().copyWith(scaffoldBackgroundColor: kPrimaryColor,), --> ال primaryTheme هيبق dark وبالتالي الخط الاساسي للتطبيق ابيض وحددنا كمان لون ال scaffold للتطبيق كله
           // scaffoldBackgroundColor: ThemeData.dark().scaffoldBackgroundColor, ==> عشان اخلي لون خلفية ال Scaffold هو نفس لون خلفية الثيم الداكن
           appBarTheme: const AppBarTheme(
