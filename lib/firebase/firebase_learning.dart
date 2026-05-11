@@ -48,16 +48,18 @@ Firebase هي منصة شاملة لتطوير التطبيقات، مدعومة
 2- firebase cli دا بينزل مرة واحدة فقط ومش بيحصل تاني
 بعد تنزيل firebase cli هنستخدام امر firebase login ولو كنت مسجل هنكتب امر firebase login --reauth عشان اتاكد ان انا عامل عملية Authentication بشكل صحيح
 3-  هنفتح ال command line ونكتب dart pub global activate flutterfire_cli وممكن يطلب مننا نثبت ال path في ال environment variables للجهاز
+ثم هعمل مشروع جديد في ال fire console بنفس اسم التطبيق appName-app ثم flutterfire configure
+
 4- هنكتب امر ال Firebase.initializeApp في التطبيق عندنا بس عشان يتفعل لازم يبقي عندنا ملف firebase_options.dart ودا ملف بيتعمله generate بشكل تلقائي يعني مش احنا اللي بنكتبه وعشان نعمله بنكتب امر flutterfire configure في ال root for my app يعني جوه ال terminal للتطبيق
 flutterfire configure دا بي fetch كل المشاريع اللي انا عاملها علي ال firebase وهختار من الخيارات اللي هو هيجبهالي <create a project> ولكن دي مش افضل طريقة
 افضل طريقة هي اني اروح علي موقع ال firebase من بحث جوجل 'console.firebase.google.com/u/0' واول مدخل هلاقي كل المشاريع اللي انا عاملها مع امكانية add project
 هختار add project وهكتب اسم المشروع ومينفعش يبقي فيه underscore _ لازم تبقي dash - زي 'chat-app' وبعدين continue وبعدين هختار default account for firebase وبعدين create project
 وكده لما انشات المشروع هرجع للمشروع علي vs code وهرن نفس الكود flutterfire configure وهختار المشروع اللي انا انشاته مع العلم انه هيكون مكتوب بالطريقة دي 'project id(project name)' زي كده 'chat-app-d17c9(chat-app)' وبعد مختاره هيسالني ويقولي تختار انهي platform تعملها setup وايا كان اللي هختارها هو هيعمل setup ليهم كلهم وهيتضيف ال firebase ليهم واحدة ورا واحدة
-اثناء عمل ال setup لل ios هو هيطلب من حاجة اسمها bundle id وهنجيبها بنفسنا بس هو بيجيبها لوحده في ال android اما في ال ios احنا اللي هنجيبها
+اثناء عمل ال setup لل ios هو هيطلب مني حاجة اسمها bundle id وهنجيبها بنفسنا بس هو بيجيبها لوحده في ال android اما في ال ios احنا اللي هنجيبها
 كل تطبيق بيبقي ليه id مميز خاص بيه عشان لما يجي يترفع علي ال store وبيكون كلآتي 'com.domain name بتاعك.appname' زي كده 'com.ahmed.com.chat-app' او 'com.google.chat-app' دا دومين بتاع جوجل مثلا
-في الاندرويد احنا عندنا ملفين مهمين اوي وهما -android>build.gradle و -android>app>build.gradle
--android>app>build.gradle : هنلاقي جواه default config{وفيها ال application id بتاع التطبيق وهو بيتضاف تلقائي } اما في حالة ال ios انا اللي هضيفه
-طريقة اضافة ال id لل ios : ios folder>وبنفتحه جوه ال xcode وبعد كده بنروح علي خانة اسمها runner وبعد كده بنلاقي ال bundle identifire بس لازم يبقي عندنا ال xcode عشان نقدر نفتحتها يعني لازم يكون عندنا جهاز macos بس مش ضروري نروح نجيبها طالما مش هنغير ال id اللي في الاندرويد مثلا
+في الاندرويد احنا عندنا ملفين مهمين اوي وهما -android/build.gradle و -android/app/build.gradle
+-android/app/build.gradle : هنلاقي جواه default config{وفيها ال application id بتاع التطبيق وهو بيتضاف تلقائي } اما في حالة ال ios انا اللي هضيفه
+طريقة اضافة ال id لل ios : ios folder/وبنفتحه جوه ال xcode وبعد كده بنروح علي خانة اسمها runner وبعد كده بنلاقي ال bundle identifire بس لازم يبقي عندنا ال xcode عشان نقدر نفتحتها يعني لازم يكون عندنا جهاز macos بس مش ضروري نروح نجيبها طالما مش هنغير ال id اللي في الاندرويد مثلا
 بس احنا نقدر نخمن ال id بتاع ال ios وهو : com.example.chatApp ==> بيشيل ال dash - وبيخلي اول حرف من الكلمة التانية كابيتال
 بعد منخلص هنروح علي الموقع بتاعنا بتاع ال firebase وهنخش علي المشروع اللي عملناه وهنخش علي ال setting وهننزل تحت خالص هنلاقي ان هو عمل setup للمنصات بنجاح
 وبعدين بعد متم توليد ملف ال firebase_options هنعمل في void main دا

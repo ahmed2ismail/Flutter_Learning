@@ -42,6 +42,10 @@ linter:
     # بشكل صريح لزيادة وضوح الكود.
     # prefer_final_in_for_each: true
 
+    # تفضل استخدام استيراد الحزم (package imports) بدلاً من الاستيراد النسبي (relative imports) لتحسين وضوح الكود وتنظيمه.
+    # always_use_package_imports: true
+
+    # تفضل استخدام علامات الاقتباس المفردة (single quotes) بدلاً من علامات الاقتباس المزدوجة (double quotes) في النصوص الثابتة (string literals) لزيادة الاتساق في الكود.
     # prefer_single_quotes: true  # Uncomment to enable the `prefer_single_quotes` rule
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options

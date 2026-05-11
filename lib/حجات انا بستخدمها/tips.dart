@@ -235,6 +235,8 @@ Text.rich(
   TextSpan(
     text: 'مرحبًا بك في ', // النص الأساسي
     style: TextStyle(fontSize: 20, color: Colors.black), // نمط النص الأساسي
+    // السطر دا لجعل النص قابلاً للضغط
+    recognizer: TapGestureRecognizer()..onTap = subTextOnTap, // final VoidCallback? subTextOnTap; انا انشاته فوق في الويدجت
     children: [
       TextSpan(
         text: 'FruitHUB', // النص المميز
@@ -529,12 +531,318 @@ return AbsorbPointer(
                 right: 16.0,
                 left: 16.0,
                 // عشان لما يطلع الكيبورد مايحصلش overflow لل height يعني الشاشة متغيرش نفسها
-                // viewInsets.bottom بترجع المساحة اللي اتاخدت من الشاشة بسبب الكيبورد
+                // viewInsets.bottom بترجع المساحة اللي اتاخدت من الشاشة بسبب الكيبورد بمعني:
+                // بيخلي الشاشة تترفع لفوق بمقدار ارتفاع الكيبورد لما يفتح، عشان الكيبورد ميغطيش على الزرار
                 bottom: MediaQuery.of(context).viewInsets.bottom,
               ),
               child: const SingleChildScrollView(child: AddNoteForm()),
             ),
           );
+--------------------------------------------------------------------------------
+Scaffold(
+      // عشان لما يطلع الكيبورد مايحصلش overflow لل height يعني الشاشة متغيرش نفسها
+      resizeToAvoidBottomInset: false,
+      body: SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      padding: EdgeInsets.only(
+        left: AppConstants.kHorizontalPadding16,
+        right: AppConstants.kHorizontalPadding16,
+        // عشان لما يطلع الكيبورد مايحصلش overflow لل height يعني الشاشة متغيرش نفسها
+        // viewInsets.bottom بترجع المساحة اللي اتاخدت من الشاشة بسبب الكيبورد
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: ...
+      ),
+    );
+--------------------------------------------------------------------------------
+// 1. السطر ده بيقفل الكيبورد أول ما يضغط على الزرار عشان الـ Dialog يظهر في النص بالظبط
+FocusScope.of(context).unfocus();
+--------------------------------------------------------------------------------
+return showDialog(
+  context: context,
+  // barrierDismissible: false بتمنع المستخدم إنه يقفل الـ Dialog لو ضغط في أي مكان بره
+  barrierDismissible: false,
+  builder: (context) {
+    return CustomSuccessDialog(
+      message: S.of(context).SuccefulChangedPasswordMessage,
+      iconPath: AppAssets.successCheckIcon,
+    );
+  },
+);
+import 'package:flutter/material.dart';
+import 'package:fruits_hub/core/utils/app_colors.dart';
+import 'package:fruits_hub/core/utils/app_text_styles.dart';
+import 'package:svg_flutter/svg.dart';
+
+class CustomSuccessDialog extends StatelessWidget {
+  const CustomSuccessDialog({
+    super.key,
+    required this.message,
+    required this.iconPath,
+  });
+
+  final String message;
+  final String iconPath;
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      backgroundColor: AppColors.backgroundWhiteColor,
+      // التحكم في المسافات الخارجية للـ Dialog عشان ميكونش لازق في الشاشة
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 16),
+        child: Column(
+          // mainAxisSize: MainAxisSize.min مهمة جداً عشان الـ Dialog ياخد مساحة المحتوى بس وميمتدش بطول الشاشة
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // الأيقونة المستخرجة من فيجما
+            SvgPicture.asset(iconPath), 
+            
+            const SizedBox(height: 24),
+            
+            // نص الرسالة
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyles.bold16.copyWith(
+                color: AppColors.grayscale950,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+--------------------------------------------------------------------------------
+import 'package:pin_code_fields/pin_code_fields.dart'; // باكدج المربعات الخاصة بالـ OTP
+
+// الويدجت المستخرجة: مسؤولة فقط عن رسم مربعات إدخال الكود (OTP)
+class CustomPinCodeField extends StatelessWidget {
+  const CustomPinCodeField({super.key, required this.onChanged, this.pinController});
+
+  // متغير لاستقبال الدالة اللي هتتنفذ لما المستخدم يكتب رقم
+  final void Function(String) onChanged;
+  final PinInputController? pinController;
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: MaterialPinField(
+        pinController: pinController,
+        // عدد المربعات اللي هتظهر للمستخدم
+        length: 4, 
+        // عشان نفتح لوحة مفاتيح الأرقام بس للمستخدم (مش الحروف)
+        keyboardType: TextInputType.number, 
+        onChanged: onChanged,
+
+        theme: MaterialPinTheme(
+          shape: MaterialPinShape.outlined, 
+          cellSize: const Size(74, 60), 
+          borderRadius: BorderRadius.circular(8),
+          cursorColor: AppColors.green1_500,
+
+          // --- ألوان خلفية المربع (من جوه) ---
+          fillColor: AppColors.whiteOp, // لونه وهو فاضي
+          focusedFillColor: AppColors.backgroundWhiteColor, // لونه والمستخدم واقف بيكتب جواه
+          filledFillColor: AppColors.backgroundWhiteColor, // لونه بعد ما المستخدم يكتب الرقم ويسيبه
+          
+          // --- ألوان إطار أو حدود المربع (من بره) ---
+          borderColor: AppColors.whiteSoft, // لون الإطار والمربع فاضي
+          focusedBorderColor: AppColors.orange500, // لون الإطار والمستخدم بيكتب
+          filledBorderColor: AppColors.whiteSoft, // لون الإطار بعد ما يخلص كتابة في المربع
+          textStyle: TextStyles.bold23.copyWith(
+            color: AppColors.grayscale950,
+            height: 1.40,
+          ),
+        ),
+      ),
+    );
+  }
+}
+--------------------------------------------------------------------------------
+import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform;
+import 'package:flutter/material.dart';
+
+// ... داخل الـ build method في واجهة تسجيل الدخول
+
+Column(
+  children: [
+    // ... حقول البريد وكلمة المرور
+
+    // زر تسجيل الدخول بجوجل (يظهر على أندرويد و iOS فقط) and windows/web
+    if (kIsWeb || defaultTargetPlatform == TargetPlatform.android ||
+        defaultTargetPlatform == TargetPlatform.iOS ||
+        defaultTargetPlatform == TargetPlatform.windows)
+      ElevatedButton(
+        onPressed: () { /* signInWithGoogle */ },
+        child: const Text('Sign in with Google'),
+      ),
+
+    // زر تسجيل الدخول بفيسبوك (يظهر على أندرويد و iOS فقط)
+    if (defaultTargetPlatform == TargetPlatform.android ||
+        defaultTargetPlatform == TargetPlatform.iOS)
+      ElevatedButton(
+        onPressed: () { /* signInWithFacebook */ },
+        child: const Text('Sign in with Facebook'),
+      ),
+
+    // زر تسجيل الدخول بآبل (يظهر على iOS فقط)
+    if (defaultTargetPlatform == TargetPlatform.iOS)
+      ElevatedButton(
+        onPressed: () { /* signInWithApple */ },
+        child: const Text('Sign in with Apple'),
+      ),
+  ],
+)
+
+------------------------------------- Spread Operator(أداة التفريغ) -------------------------------------------
+عامل التوزيع (Spread Operator) ويرمز له بـ `...` هو ميزة قوية في Dart تُستخدم لتفريغ عناصر قائمة (List) أو مجموعة (Set) أو خريطة (Map) داخل مجموعة أخرى.
+
+**لماذا نستخدمه؟**
+بدلاً من استخدام حلقات التكرار (Loops) أو دالة `.addAll()` لإضافة عناصر قائمة إلى قائمة أخرى، يقوم الـ Spread Operator بـ "بسط" أو "توزيع" العناصر كأنها عناصر فردية.
+
+**مثال عملي 1 (قوائم بسيطة):**
+```dart
+List<String> fruits = ['Apple', 'Banana'];
+List<String> vegetables = ['Carrot', 'Potato'];
+
+// دمج القائمتين في قائمة واحدة
+List<String> allFood = [...fruits, ...vegetables, 'Bread'];
+// النتيجة: [Apple, Banana, Carrot, Potato, Bread]
+```
+
+**مثال عملي 2 (في واجهات Flutter):**
+غالباً ما نستخدمه داخل `Column` أو `Row` عندما يكون لدينا قائمة من البيانات ونريد تحويلها إلى Widgets وإضافتها بجانب عناصر أخرى ثابتة.
+
+```dart
+Column(
+  children: [
+    Text('قائمة المستخدمين:'), // عنصر ثابت
+    
+    // استخدام الـ Spread Operator لتفريغ قائمة الـ Widgets الناتجة من الـ map
+    ...users.map((user) => ListTile(
+          title: Text(user.name),
+          subtitle: Text(user.email),
+        )), 
+        
+    Text('نهاية القائمة'), // عنصر ثابت آخر
+  ],
+)
+```
+
+**ملاحظة هامة:**
+يوجد أيضاً ما يسمى بـ **Null-aware Spread Operator (`...?`)**، ويُستخدم إذا كانت القائمة التي تريد تفريغها قد تكون `null`؛ لتجنب حدوث خطأ (Crash):
+```dart
+List<int>? optionalNumbers;
+List<int> allNumbers = [1, 2, ...?optionalNumbers]; // إذا كانت null لن يحدث خطأ
+--------------------------------------------------------------------------------
+الخطوة الثانية: تفعيل رسالة "اضغط مرة أخرى للخروج" (للأندرويد). لعمل رسالة اضغط مرة اخري اذا كنت تريد الخروج من التطبيق عند الضغط على زرار الرجوع الخاص بالجهاز نفسه (الـ System Back Button)، بنستخدم ويدجت اسمها PopScope (وهي البديل الحديث لـ WillPopScope).
+
+بتحوط الـ Scaffold بتاعك في شاشة SigninView أو HomeView بالشكل ده:
+import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart'; // ستحتاج لإضافة هذه الحزمة أو استخدام CustomSnackBar الخاص بك
+
+class SigninView extends StatefulWidget {
+  static const routeName = 'signin_view';
+  const SigninView({super.key});
+
+  @override
+  State<SigninView> createState() => _SigninViewState();
+}
+
+class _SigninViewState extends State<SigninView> {
+  DateTime? currentBackPressTime;
+
+  @override
+  Widget build(BuildContext context) {
+    return PopScope(
+      canPop: false, // بنمنع الرجوع الافتراضي
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        
+        final now = DateTime.now();
+        // لو ضغط مرتين ورا بعض في أقل من ثانيتين، اخرج من التطبيق
+        if (currentBackPressTime != null && 
+            now.difference(currentBackPressTime!) < const Duration(seconds: 2)) {
+          // خروج من التطبيق
+          // SystemNavigator.pop(); (يحتاج import 'package:flutter/services.dart';)
+        } else {
+          // لو ضغط مرة واحدة، احفظ الوقت واظهر رسالة
+          currentBackPressTime = now;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('اضغط مرة أخرى للخروج من التطبيق'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('تسجيل الدخول'),
+          // automaticallyImplyLeading: false, // ممكن تستخدمها للتأكيد على إخفاء زرار الرجوع
+        ),
+        body: const SigninViewBody(),
+      ),
+    );
+  }
+}
+
+--------------------------------------------------------------------------------
+المستمع العام (Global Auth State Listener) 📡:
+عشان نشوف هنودي المستخدم لفين لو سجل او مسجلش دخوله
+Firebase بيوفر لنا حاجة قوية جداً اسمها Stream (مجرى بيانات) بيفضل شغال ويراقب حالة المستخدم طول ما التطبيق مفتوح. الدالة دي اسمها FirebaseAuth.instance.authStateChanges().
+
+كيف تعمل؟ بدلاً من أن نجعل الـ home الخاص بالـ MaterialApp في ملف main.dart يشير لشاشة تسجيل الدخول دائماً، نجعله يشير إلى StreamBuilder يستمع لهذا الستريم:
+// (مثال للتوضيح فقط)
+class AuthChecker extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        // لو لسه بيجيب الحالة نعرض دائرة تحميل
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        }
+        
+        // لو رجع بيانات (يعني المستخدم مسجل دخول وليه Token محفوظ في الجهاز)
+        if (snapshot.hasData) {
+          return const HomeView();
+        } 
+        
+        // لو مرجعش بيانات (المستخدم مش مسجل دخول أو عمل Sign out)
+        else {
+          return const SigninView(); 
+        }
+      },
+    );
+  }
+}
+
+--------------------------------------------------------------------------------
+الفرق بين jsonDecode و jsonEncode في Dart:
+- jsonDecode: بتستخدم لتحويل نص JSON (اللي هو String) إلى كائن Dart (زي Map أو List).
+- jsonEncode: بتستخدم لتحويل كائن Dart (زي Map أو List) إلى نص JSON (String) عشان تقدر تبعته للسيرفر أو تخزنه في ملف.
+مثال:
+```dart
+import 'dart:convert';
+
+void main() {
+  // تحويل نص JSON إلى كائن Dart
+  String jsonString = '{"name": "John", "age": 30}';
+  Map<String, dynamic> userData = jsonDecode(jsonString);
+  print(userData['name']); // Output: John
+
+  // تحويل كائن Dart إلى نص JSON
+  String encodedJson = jsonEncode(userData);
+  print(encodedJson); // Output: {"name":"John","age":30}
+}
+```
 --------------------------------------------------------------------------------
 الفرق بين log و print و debugPrint في Dart مع مثال :
 - print: بيطبع الرسائل في وحدة التحكم (console) بشكل مباشر. لكن لو كانت الرسالة طويلة جدًا ممكن تتقطع وما تظهرش كاملة.
